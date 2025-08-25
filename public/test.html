@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Bakhryaan Blessed Playhouse</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <div class="logo-container">
+                <h1 class="main-title">Bakhryaan Blessed Playhouse</h1>
+                <div class="subtitle">Test Mode - New Games</div>
+            </div>
+        </header>
+
+        <div class="game-menu">
+            <div class="menu-title">Testing New Games</div>
+            <div class="game-grid">
+                <div class="game-card" data-game="spelling">
+                    <div class="game-icon">📝</div>
+                    <h3>Spelling Bee</h3>
+                    <p>Test your spelling skills</p>
+                    <div class="game-stats">
+                        <span>Words: <span id="spellingWords">0</span></span>
+                    </div>
+                </div>
+                <div class="game-card" data-game="carRace">
+                    <div class="game-icon">🏎️</div>
+                    <h3>Car Race</h3>
+                    <p>Speed through neon tracks</p>
+                    <div class="game-stats">
+                        <span>Laps: <span id="carRaceLaps">0</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameCanvas" class="game-canvas-container" style="display: none;">
+            <div class="game-header-bar">
+                <button id="backToMenu" class="back-btn">← Back to Menu</button>
+                <div class="game-info">
+                    <span id="currentGameName">Game</span>
+                    <span id="gameTimer">Time: 00:00</span>
+                </div>
+                <div class="game-controls">
+                    <button id="pauseGame" class="control-btn">⏸️</button>
+                    <button id="restartGame" class="control-btn">🔄</button>
+                </div>
+            </div>
+            <canvas id="gameCanvasElement" width="800" height="600"></canvas>
+            <div class="game-overlay" id="gameOverlay" style="display: none;">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle">Game Over</h2>
+                    <p id="overlayMessage">Your score: <span id="overlayScore">0</span></p>
+                    <div class="overlay-buttons">
+                        <button id="playAgain" class="btn-primary">Play Again</button>
+                        <button id="backToMain" class="btn-secondary">Main Menu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="game-footer">
+            <p>Testing new games - Built with ❤️ by <strong>BamzzStudio</strong></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

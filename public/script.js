@@ -12,7 +12,9 @@ class BlessedPlayhouse {
             math: 0,
             color: 0,
             tetris: 0,
-            flappy: 0
+            flappy: 0,
+            spelling: 0,
+            carRace: 0
         };
         this.gameTimer = null;
         this.startTime = null;
@@ -134,7 +136,9 @@ class BlessedPlayhouse {
             math: 'Quick Math',
             color: 'Color Rush',
             tetris: 'Neon Tetris',
-            flappy: 'Flappy Bird'
+            flappy: 'Flappy Bird',
+            spelling: 'Spelling Bee',
+            carRace: 'Car Race'
         };
         return names[gameType] || 'Game';
     }
@@ -164,6 +168,12 @@ class BlessedPlayhouse {
                 break;
             case 'flappy':
                 this.initFlappyGame(ctx, canvas);
+                break;
+            case 'spelling':
+                this.initSpellingGame(ctx, canvas);
+                break;
+            case 'carRace':
+                this.initCarRaceGame(ctx, canvas);
                 break;
         }
     }
@@ -607,7 +617,7 @@ class BlessedPlayhouse {
         this.currentGameLoop = gameLoop;
     }
 
-    // Fixed Tetris Game with Working Controls and Faster Drop Speed
+    // FIXED Tetris Game with Working Controls and Faster Drop Speed
     initTetrisGame(ctx, canvas) {
         const board = Array(20).fill().map(() => Array(10).fill(0));
         let currentPiece = this.getRandomPiece();
@@ -873,7 +883,322 @@ class BlessedPlayhouse {
         });
     }
 
-    // Enhanced Global Keyboard Controls for Tetris
+    // Spelling Bee Game - Fill in the Gaps
+    initSpellingGame(ctx, canvas) {
+        const words = [
+            'blessed', 'playhouse', 'arcade', 'gaming', 'fun', 'awesome', 'neon', 'glow',
+            'adventure', 'challenge', 'skill', 'speed', 'memory', 'logic', 'puzzle', 'race',
+            'snake', 'bird', 'tetris', 'math', 'color', 'match', 'quick', 'fast'
+        ];
+        
+        let currentWord = words[Math.floor(Math.random() * words.length)];
+        let currentInput = '';
+        let score = 0;
+        let gameActive = true;
+        let timeLeft = 60;
+        let wordTimer = 0;
+        
+        // Create masked word with some letters revealed
+        const createMaskedWord = (word) => {
+            const length = word.length;
+            const revealedCount = Math.max(2, Math.floor(length * 0.4)); // Reveal 40% of letters
+            const positions = [];
+            
+            // Always reveal first and last letter
+            positions.push(0);
+            positions.push(length - 1);
+            
+            // Add random positions for revealed letters
+            while (positions.length < revealedCount) {
+                const pos = Math.floor(Math.random() * length);
+                if (!positions.includes(pos)) {
+                    positions.push(pos);
+                }
+            }
+            
+            return word.split('').map((letter, index) => 
+                positions.includes(index) ? letter : '_'
+            ).join(' ');
+        };
+        
+        let maskedWord = createMaskedWord(currentWord);
+        
+        const drawSpellingGame = () => {
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw neon border
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+            
+            // Draw title (reduced by half)
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 18px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText('Spelling Bee - Fill the Gaps', canvas.width / 2, 40);
+            
+            // Draw masked word (reduced by half)
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 24px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText(maskedWord, canvas.width / 2, 100);
+            
+            // Draw hint
+            ctx.fillStyle = '#888';
+            ctx.font = '14px Exo 2';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Word length: ${currentWord.length} letters`, canvas.width / 2, 130);
+            
+            // Draw input field
+            ctx.fillStyle = '#333';
+            ctx.fillRect(150, 160, 500, 40);
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(150, 160, 500, 40);
+            
+            // Draw input text
+            ctx.fillStyle = '#00ff88';
+            ctx.font = '18px Exo 2';
+            ctx.textAlign = 'left';
+            ctx.fillText(currentInput, 170, 185);
+            
+            // Draw instructions (reduced by 80%)
+            ctx.fillStyle = '#888';
+            ctx.font = '10px Exo 2';
+            ctx.textAlign = 'center';
+            ctx.fillText('Fill in the missing letters and press Enter', canvas.width / 2, 220);
+            
+            // Draw score and time (reduced by half)
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 12px Orbitron';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Score: ${score}`, 25, 25);
+            ctx.fillText(`Time: ${timeLeft}s`, canvas.width - 75, 25);
+        };
+        
+        const gameLoop = setInterval(() => {
+            if (!gameActive) {
+                clearInterval(gameLoop);
+                return;
+            }
+            
+            wordTimer++;
+            if (wordTimer >= 60) {
+                timeLeft--;
+                wordTimer = 0;
+                
+                if (timeLeft <= 0) {
+                    gameActive = false;
+                    this.scores.spelling = score;
+                    this.updateScore('spelling');
+                    this.gameOver('spelling', 'Time\'s up!');
+                    clearInterval(gameLoop);
+                    return;
+                }
+            }
+            
+            drawSpellingGame();
+        }, 1000 / 60);
+        
+        this.currentGameLoop = gameLoop;
+        
+        // Handle input
+        const handleInput = (e) => {
+            if (!gameActive) return;
+            
+            if (e.key === 'Enter') {
+                if (currentInput.toLowerCase() === currentWord.toLowerCase()) {
+                    score++;
+                    this.sounds.success();
+                    currentWord = words[Math.floor(Math.random() * words.length)];
+                    maskedWord = createMaskedWord(currentWord);
+                    currentInput = '';
+                    timeLeft = Math.min(timeLeft + 5, 60); // Bonus time
+                } else {
+                    this.sounds.error();
+                    timeLeft = Math.max(timeLeft - 3, 0); // Penalty time
+                }
+            } else if (e.key === 'Backspace') {
+                currentInput = currentInput.slice(0, -1);
+            } else if (e.key.length === 1 && /[a-zA-Z]/.test(e.key)) {
+                currentInput += e.key;
+            }
+        };
+        
+        document.addEventListener('keydown', handleInput);
+        
+        // Clean up event listener when game ends
+        this.cleanupListeners = () => {
+            document.removeEventListener('keydown', handleInput);
+        };
+    }
+
+    // Car Race Game
+    initCarRaceGame(ctx, canvas) {
+        const car = {
+            x: canvas.width / 2,
+            y: canvas.height - 100,
+            width: 50,
+            height: 80,
+            speed: 0,
+            maxSpeed: 48, // Increased by 6x from 8
+            acceleration: 1.2, // Increased by 6x from 0.2
+            deceleration: 0.6, // Increased by 6x from 0.1
+            turnSpeed: 18 // Increased by 6x from 3
+        };
+        
+        const obstacles = [];
+        let score = 0;
+        let gameActive = true;
+        let frame = 0;
+        let roadOffset = 0;
+        
+        // Create car image
+        const carImg = new Image();
+        carImg.src = 'data:image/svg+xml;base64,' + btoa(`
+            <svg width="50" height="80" xmlns="http://www.w3.org/2000/svg">
+                <rect x="5" y="15" width="40" height="50" rx="8" fill="#ff4444" stroke="#cc0000" stroke-width="2"/>
+                <rect x="8" y="20" width="34" height="40" rx="5" fill="#ffffff" stroke="#cccccc" stroke-width="1"/>
+                <rect x="12" y="25" width="26" height="30" rx="3" fill="#ff6666"/>
+                <circle cx="15" cy="70" r="8" fill="#333333" stroke="#666666" stroke-width="1"/>
+                <circle cx="35" cy="70" r="8" fill="#333333" stroke="#666666" stroke-width="1"/>
+                <rect x="10" y="10" width="30" height="8" rx="4" fill="#ff8888"/>
+                <rect x="15" y="12" width="20" height="4" rx="2" fill="#ffffff"/>
+            </svg>
+        `);
+        
+        const drawCarRaceGame = () => {
+            // Clear canvas
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw road
+            ctx.fillStyle = '#333';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw road lines
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([20, 20]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            
+            // Draw car using image
+            ctx.drawImage(carImg, car.x - car.width / 2, car.y - car.height / 2, car.width, car.height);
+            
+            // Draw obstacles
+            obstacles.forEach(obstacle => {
+                ctx.fillStyle = '#444';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+            });
+            
+            // Draw score
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 24px Orbitron';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Laps: ${score}`, 50, 50);
+        };
+        
+        const gameLoop = setInterval(() => {
+            if (!gameActive) {
+                clearInterval(gameLoop);
+                return;
+            }
+            
+            frame++;
+            
+            // Generate obstacles
+            if (frame % 120 === 0) {
+                const lane = Math.random() < 0.5 ? 0 : 1;
+                const x = lane === 0 ? 100 : canvas.width - 150;
+                obstacles.push({
+                    x: x,
+                    y: -50,
+                    width: 80,
+                    height: 50
+                });
+            }
+            
+            // Move obstacles
+            obstacles.forEach(obstacle => {
+                obstacle.y += 18; // Increased by 6x from 3
+                if (obstacle.y > canvas.height) {
+                    score++;
+                    this.scores.carRace = score;
+                    this.updateScore('carRace');
+                    this.sounds.success();
+                }
+            });
+            
+            // Remove off-screen obstacles
+            obstacles.splice(0, obstacles.filter(obs => obs.y > canvas.height).length);
+            
+            // Collision detection
+            obstacles.forEach(obstacle => {
+                if (car.x - car.width / 2 < obstacle.x + obstacle.width &&
+                    car.x + car.width / 2 > obstacle.x &&
+                    car.y - car.height / 2 < obstacle.y + obstacle.height &&
+                    car.y + car.height / 2 > obstacle.y) {
+                    gameActive = false;
+                    this.scores.carRace = score;
+                    this.updateScore('carRace');
+                    this.gameOver('carRace', 'Car crashed!');
+                    clearInterval(gameLoop);
+                    return;
+                }
+            });
+            
+            drawCarRaceGame();
+        }, 1000 / 60);
+        
+        this.currentGameLoop = gameLoop;
+        
+        // Controls
+        const handleKeyDown = (e) => {
+            if (!gameActive) return;
+            
+            switch(e.key) {
+                case 'ArrowUp':
+                    car.speed = Math.min(car.speed + car.acceleration, car.maxSpeed);
+                    break;
+                case 'ArrowDown':
+                    car.speed = Math.max(car.speed - car.acceleration, 0);
+                    break;
+                case 'ArrowLeft':
+                    if (car.x > car.width / 2) {
+                        car.x -= car.turnSpeed;
+                    }
+                    break;
+                case 'ArrowRight':
+                    if (car.x < canvas.width - car.width / 2) {
+                        car.x += car.turnSpeed;
+                    }
+                    break;
+            }
+        };
+        
+        const handleKeyUp = (e) => {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                car.speed = Math.max(car.speed - car.deceleration, 0);
+            }
+        };
+        
+        document.addEventListener('keydown', handleKeyDown);
+        document.addEventListener('keyup', handleKeyUp);
+        
+        // Clean up event listeners when game ends
+        this.cleanupListeners = () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            document.removeEventListener('keyup', handleKeyUp);
+        };
+    }
+
+    // FIXED Global Keyboard Controls for Tetris
     handleKeyPress(e) {
         if (this.currentGame === 'snake') {
             switch(e.key) {
@@ -905,12 +1230,16 @@ class BlessedPlayhouse {
         } else if (this.currentGame === 'tetris') {
             if (!this.tetrisGame) return;
             
+            let moved = false;
+            
             switch(e.key) {
                 case 'ArrowLeft':
                     if (this.tetrisGame.pieceX > 0) {
                         this.tetrisGame.pieceX--;
                         if (this.checkTetrisCollision()) {
                             this.tetrisGame.pieceX++;
+                        } else {
+                            moved = true;
                         }
                     }
                     break;
@@ -919,6 +1248,8 @@ class BlessedPlayhouse {
                         this.tetrisGame.pieceX++;
                         if (this.checkTetrisCollision()) {
                             this.tetrisGame.pieceX--;
+                        } else {
+                            moved = true;
                         }
                     }
                     break;
@@ -926,12 +1257,20 @@ class BlessedPlayhouse {
                     this.tetrisGame.pieceY++;
                     if (this.checkTetrisCollision()) {
                         this.tetrisGame.pieceY--;
+                    } else {
+                        moved = true;
                     }
                     break;
                 case ' ':
                     e.preventDefault();
                     this.rotateTetrisPiece();
                     break;
+            }
+            
+            // Update local variables to match stored state
+            if (moved) {
+                pieceX = this.tetrisGame.pieceX;
+                pieceY = this.tetrisGame.pieceY;
             }
         }
     }
@@ -970,6 +1309,11 @@ class BlessedPlayhouse {
         clearInterval(this.gameTimer);
         clearInterval(this.currentGameLoop);
 
+        // Clean up event listeners
+        if (this.cleanupListeners) {
+            this.cleanupListeners();
+        }
+
         document.getElementById('overlayTitle').textContent = 'Game Over!';
         document.getElementById('overlayMessage').innerHTML = `
             <div style="margin-bottom: 15px;">
@@ -995,6 +1339,11 @@ class BlessedPlayhouse {
         this.gameState = 'menu';
         clearInterval(this.gameTimer);
         clearInterval(this.currentGameLoop);
+        
+        // Clean up event listeners
+        if (this.cleanupListeners) {
+            this.cleanupListeners();
+        }
         
         document.getElementById('gameCanvas').style.display = 'none';
         document.getElementById('gameMenu').style.display = 'block';
@@ -1039,6 +1388,8 @@ class BlessedPlayhouse {
         document.getElementById('colorScore').textContent = this.scores.color;
         document.getElementById('tetrisLines').textContent = this.scores.tetris / 10;
         document.getElementById('flappyScore').textContent = this.scores.flappy;
+        document.getElementById('spellingWords').textContent = this.scores.spelling;
+        document.getElementById('carRaceLaps').textContent = this.scores.carRace;
     }
 
     loadScores() {
