@@ -1,0 +1,28 @@
+name = "bakhryaan-blessed-playhouse"
+version = "1.0.0"
+type = "text"
+production_host = "fuchsia-clownfish-vanna-oii6l24i.bls.dev"
+
+[deployment]
+permission = "public"
+nodes = 1
+
+[build]
+dir = "build"
+entry = "bakhryaan-blessed-playhouse_debug.wasm"
+command = "npm run build:debug"
+
+[build_release]
+dir = "build"
+entry = "bakhryaan-blessed-playhouse.wasm"
+command = "npm run build:release"
+
+[[deployments]]
+name = "blessnet"
+description = ""
+cid = "bafybeibsxysqcp4b3pzudetgrf5nr7ufxix25h5blzmlh6qiv2ug5giwfi"
+created = "2025-08-25T09:17:28.237Z"
+
+  [deployments.runtime]
+  url = "blessnet.tar.gz"
+  checksum = "ad5b53a6b4d2fc76a7aa3d72bc326ac84de6fb59f3e4990455882333c7daf3bb"

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakhryaan Blessed Playhouse - Arcade Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Header Section -->
+        <header class="game-header">
+            <div class="logo-container">
+                <h1 class="main-title">Bakhryaan Blessed Playhouse</h1>
+                <div class="subtitle">Blessed Gaming Experience</div>
+            </div>
+            <div class="header-controls">
+                <button id="soundToggle" class="control-btn">🔊</button>
+                <button id="fullscreenToggle" class="control-btn">⛶</button>
+            </div>
+        </header>
+
+        <!-- Game Selection Menu -->
+        <div id="gameMenu" class="game-menu">
+            <div class="menu-title">Choose Your Adventure</div>
+            <div class="game-grid">
+                <div class="game-card" data-game="snake">
+                    <div class="game-icon">🐍</div>
+                    <h3>Neon Snake</h3>
+                    <p>Classic snake with neon aesthetics</p>
+                    <div class="game-stats">
+                        <span>High Score: <span id="snakeScore">0</span></span>
+                    </div>
+                </div>
+                <div class="game-card" data-game="memory">
+                    <div class="game-icon">🧠</div>
+                    <h3>Memory Match</h3>
+                    <p>Test your memory with beautiful cards</p>
+                    <div class="game-stats">
+                        <span>Best Time: <span id="memoryTime">--</span></span>
+                    </div>
+                </div>
+                <div class="game-card" data-game="math">
+                    <div class="game-icon">🔢</div>
+                    <h3>Quick Math</h3>
+                    <p>Fast-paced mathematical challenges</p>
+                    <div class="game-stats">
+                        <span>Level: <span id="mathLevel">1</span></span>
+                    </div>
+                </div>
+                <div class="game-card" data-game="color">
+                    <div class="game-icon">🎨</div>
+                    <h3>Color Rush</h3>
+                    <p>Match colors in this exciting rush</p>
+                    <div class="game-stats">
+                        <span>Score: <span id="colorScore">0</span></span>
+                    </div>
+                </div>
+                <div class="game-card" data-game="tetris">
+                    <div class="game-icon">🧩</div>
+                    <h3>Neon Tetris</h3>
+                    <p>Classic block stacking with neon glow</p>
+                    <div class="game-stats">
+                        <span>Lines: <span id="tetrisLines">0</span></span>
+                    </div>
+                </div>
+                <div class="game-card" data-game="flappy">
+                    <div class="game-icon">🐦</div>
+                    <h3>Flappy Bird</h3>
+                    <p>Navigate through neon pipes</p>
+                    <div class="game-stats">
+                        <span>Score: <span id="flappyScore">0</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Canvas Container -->
+        <div id="gameCanvas" class="game-canvas-container" style="display: none;">
+            <div class="game-header-bar">
+                <button id="backToMenu" class="back-btn">← Back to Menu</button>
+                <div class="game-info">
+                    <span id="currentGameName">Game</span>
+                    <span id="gameTimer">Time: 00:00</span>
+                </div>
+                <div class="game-controls">
+                    <button id="pauseGame" class="control-btn">⏸️</button>
+                    <button id="restartGame" class="control-btn">🔄</button>
+                </div>
+            </div>
+            <canvas id="gameCanvasElement" width="800" height="600"></canvas>
+            <div class="game-overlay" id="gameOverlay" style="display: none;">
+                <div class="overlay-content">
+                    <h2 id="overlayTitle">Game Over</h2>
+                    <p id="overlayMessage">Your score: <span id="overlayScore">0</span></p>
+                    <div class="overlay-buttons">
+                        <button id="playAgain" class="btn-primary">Play Again</button>
+                        <button id="backToMain" class="btn-secondary">Main Menu</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Screen -->
+        <div id="loadingScreen" class="loading-screen">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <h2>Loading Blessed Playhouse...</h2>
+                <p>Preparing your gaming experience</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="game-footer">
+            <p>Built with ❤️ by <strong>BamzzStudio</strong> on <strong>Bless Network</strong></p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
