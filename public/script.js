@@ -258,13 +258,8 @@ class BlessedPlayhouse {
 
     // Start game with payment or free play option
     startGame(gameType) {
-        if (this.paymentRequired) {
-            // Show payment options
-            this.showPaymentOptions(gameType);
-        } else {
-            // Start free game
-            this.startFreeGame(gameType);
-        }
+        // Mission 7: All games require 0.1 MON payment
+        this.showPaymentOptions(gameType);
     }
     
     // Show payment options modal
@@ -293,7 +288,7 @@ class BlessedPlayhouse {
                             <li>📊 Local score tracking</li>
                             <li>🎮 Practice and have fun</li>
                         </ul>
-                        <button class="free-btn" data-game="${gameType}">Play Free</button>
+
                         </div>
                 </div>
                 <button class="close-btn">✕</button>
@@ -2568,7 +2563,7 @@ class BlessedPlayhouse {
         for (let i = 0; i < pieceCount; i++) {
             puzzle.pieces.push({
                 x: Math.random() * (canvas.width - 100),
-                y: Math.random() * (canvas.width - 100),
+                y: Math.random() * (canvas.height - 100),
                 width: 80,
                 height: 80,
                 color: `hsl(${Math.random() * 360}, 70%, 50%)`,
@@ -2584,7 +2579,8 @@ class BlessedPlayhouse {
             
             if (piece.solved) {
                 ctx.fillStyle = '#00FF00';
-                ctx.fillText('✓', piece.x + 30, piece.y + 30);
+                ctx.font = '40px Arial';
+                ctx.fillText('✓', piece.x + 30, piece.y + 50);
             }
         });
     }
@@ -2652,7 +2648,6 @@ class BlessedPlayhouse {
             for (let col = 0; col < piece[row].length; col++) {
                 if (piece[row][col]) {
                     ctx.fillRect((x + col) * 30, (y + row) * 30, 30, 30);
-                    ctx.fillRect((x + col) * 30, (y + row) * 30, 30, 30);
                     ctx.strokeStyle = '#D32F2F';
                     ctx.strokeRect((x + col) * 30, (y + row) * 30, 30, 30);
                 }
@@ -2666,7 +2661,7 @@ class BlessedPlayhouse {
         
         if (this.isValidTetrisMove(tetris.currentPiece, newX, newY, tetris.board)) {
             tetris.x = newX;
-            tetris.y = y;
+            tetris.y = newY;
             return true;
         }
         return false;
@@ -2674,13 +2669,15 @@ class BlessedPlayhouse {
 
     isValidTetrisMove(piece, x, y, board) {
         for (let row = 0; row < piece.length; row++) {
-            if (piece[row][col]) {
-                const newX = x + col;
-                const newY = y + row;
-                
-                if (newX < 0 || newX >= 10 || newY >= 20 || 
-                    (newY >= 0 && board[newY][newX])) {
-                    return false;
+            for (let col = 0; col < piece[row].length; col++) {
+                if (piece[row][col]) {
+                    const newX = x + col;
+                    const newY = y + row;
+                    
+                    if (newX < 0 || newX >= 10 || newY >= 20 || 
+                        (newY >= 0 && board[newY][newX])) {
+                        return false;
+                    }
                 }
             }
         }
@@ -2709,6 +2706,7 @@ class BlessedPlayhouse {
                 tetris.score += 100;
                 this.sounds.success();
             }
+        }
     }
 
     checkCollision(rect1, rect2) {
