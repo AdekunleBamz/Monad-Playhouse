@@ -408,13 +408,6 @@ class BlessedPlayhouse {
             this.startPremiumGame(gameType);
         });
         
-        modal.querySelector('.free-btn').addEventListener('click', (e) => {
-            const gameType = e.target.dataset.game;
-            modal.remove();
-            style.remove();
-            this.startFreeGame(gameType);
-        });
-        
         modal.querySelector('.close-btn').addEventListener('click', () => {
             modal.remove();
             style.remove();
@@ -446,21 +439,7 @@ class BlessedPlayhouse {
         }
     }
     
-    // Start free game without payment
-    startFreeGame(gameType) {
-        this.currentGame = gameType;
-        this.playerName = this.playerName || 'Player';
-        this.gameState = 'playing';
-        this.startTime = Date.now();
-        this.gameStartTime = Date.now();
-        
-        document.getElementById('gameMenu').style.display = 'none';
-        document.getElementById('gameCanvas').style.display = 'block';
-        document.getElementById('currentGameName').textContent = this.getGameDisplayName(gameType);
-        
-        this.startGameTimer();
-        this.initializeGame(gameType);
-    }
+
 
     startGameWithPayment(gameType, playerName) {
         try {
