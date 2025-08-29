@@ -14,7 +14,11 @@ class BlessedPlayhouse {
             tetris: 0,
             flappy: 0,
             spelling: 0,
-            carRace: 0
+            carRace: 0,
+            monadRunner: 0,
+            cryptoPuzzle: 1,
+            tokenCollector: 0,
+            blockchainTetris: 0
         };
         this.gameTimer = null;
         this.startTime = null;
@@ -593,6 +597,22 @@ class BlessedPlayhouse {
             case 'carRace':
                     console.log('Initializing car race game...');
                 this.initCarRaceGame(ctx, canvas);
+                break;
+            case 'monadRunner':
+                    console.log('Initializing Monad Runner game...');
+                this.initMonadRunnerGame(ctx, canvas);
+                break;
+            case 'cryptoPuzzle':
+                    console.log('Initializing Crypto Puzzle game...');
+                this.initCryptoPuzzleGame(ctx, canvas);
+                break;
+            case 'tokenCollector':
+                    console.log('Initializing Token Collector game...');
+                this.initTokenCollectorGame(ctx, canvas);
+                break;
+            case 'blockchainTetris':
+                    console.log('Initializing Blockchain Tetris game...');
+                this.initBlockchainTetrisGame(ctx, canvas);
                 break;
                 default:
                     throw new Error(`Unknown game type: ${gameType}`);
@@ -2195,7 +2215,11 @@ class BlessedPlayhouse {
                 tetrisLines: document.getElementById('tetrisLines'),
                 flappyScore: document.getElementById('flappyScore'),
                 spellingWords: document.getElementById('spellingWords'),
-                carRaceLaps: document.getElementById('carRaceLaps')
+                carRaceLaps: document.getElementById('carRaceLaps'),
+                monadRunnerDistance: document.getElementById('monadRunnerDistance'),
+                cryptoPuzzleLevel: document.getElementById('cryptoPuzzleLevel'),
+                tokenCollectorTokens: document.getElementById('tokenCollectorTokens'),
+                blockchainTetrisLines: document.getElementById('blockchainTetrisLines')
             };
 
             // Update each score display if the element exists
@@ -2207,6 +2231,10 @@ class BlessedPlayhouse {
             if (elements.flappyScore) elements.flappyScore.textContent = this.scores.flappy || 0;
             if (elements.spellingWords) elements.spellingWords.textContent = this.scores.spelling || 0;
             if (elements.carRaceLaps) elements.carRaceLaps.textContent = this.scores.carRace || 0;
+            if (elements.monadRunnerDistance) elements.monadRunnerDistance.textContent = this.scores.monadRunner || 0;
+            if (elements.cryptoPuzzleLevel) elements.cryptoPuzzleLevel.textContent = this.scores.cryptoPuzzle || 1;
+            if (elements.tokenCollectorTokens) elements.tokenCollectorTokens.textContent = this.scores.tokenCollector || 0;
+            if (elements.blockchainTetrisLines) elements.blockchainTetrisLines.textContent = this.scores.blockchainTetris || 0;
         } catch (error) {
             console.error('Failed to update score displays:', error);
         }
@@ -2221,13 +2249,474 @@ class BlessedPlayhouse {
         }
     }
 
+    // Monad Runner - Endless runner with blockchain obstacles
+    initMonadRunnerGame(ctx, canvas) {
+        const runner = {
+            x: 50,
+            y: canvas.height - 100,
+            width: 40,
+            height: 60,
+            speed: 5,
+            jumpPower: -15,
+            velocity: 0,
+            onGround: true
+        };
 
+        const obstacles = [];
+        const tokens = [];
+        let score = 0;
+        let distance = 0;
 
+        // Generate initial obstacles
+        for (let i = 0; i < 5; i++) {
+            obstacles.push({
+                x: canvas.width + (i * 300),
+                y: canvas.height - 80,
+                width: 30,
+                height: 80,
+                type: 'blockchain'
+            });
+        }
 
+        // Generate tokens
+        for (let i = 0; i < 8; i++) {
+            tokens.push({
+                x: canvas.width + (i * 200),
+                y: canvas.height - 120,
+                width: 20,
+                height: 20,
+                type: 'MON'
+            });
+        }
 
+        const gameLoop = setInterval(() => {
+            if (this.gameState !== 'playing') {
+                clearInterval(gameLoop);
+                return;
+            }
 
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+            // Update distance
+            distance += 2;
+            score = Math.floor(distance / 10);
 
+            // Draw background
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw ground
+            ctx.fillStyle = '#16213e';
+            ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+
+            // Update and draw runner
+            runner.velocity += 0.8; // Gravity
+            runner.y += runner.velocity;
+
+            if (runner.y > canvas.height - 100) {
+                runner.y = canvas.height - 100;
+                runner.velocity = 0;
+                runner.onGround = true;
+            }
+
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(runner.x, runner.y, runner.width, runner.height);
+
+            // Update and draw obstacles
+            obstacles.forEach((obstacle, index) => {
+                obstacle.x -= 3;
+                if (obstacle.x < -50) {
+                    obstacle.x = canvas.width + Math.random() * 300;
+                }
+
+                ctx.fillStyle = obstacle.type === 'blockchain' ? '#FF6B6B' : '#4ECDC4';
+                ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+
+                // Collision detection
+                if (this.checkCollision(runner, obstacle)) {
+                    this.gameOver();
+                    clearInterval(gameLoop);
+                }
+            });
+
+            // Update and draw tokens
+            tokens.forEach((token, index) => {
+                token.x -= 3;
+                if (token.x < -50) {
+                    token.x = canvas.width + Math.random() * 200;
+                }
+
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(token.x, token.y, token.width, token.height);
+
+                // Collect tokens
+                if (this.checkCollision(runner, token)) {
+                    tokens.splice(index, 1);
+                    score += 50;
+                    this.sounds.success();
+                }
+            });
+
+            // Draw score and distance
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '20px Orbitron';
+            ctx.fillText(`Score: ${score}`, 20, 30);
+            ctx.fillText(`Distance: ${Math.floor(distance)}`, 20, 60);
+
+            // Handle input
+            this.handleRunnerInput(runner);
+        }, 1000 / 60);
+
+        this.currentGameLoop = gameLoop;
+    }
+
+    // Crypto Puzzle - Blockchain-themed puzzle game
+    initCryptoPuzzleGame(ctx, canvas) {
+        const puzzle = {
+            pieces: [],
+            selectedPiece: null,
+            level: 1,
+            score: 0
+        };
+
+        // Initialize puzzle pieces
+        this.initPuzzlePieces(puzzle, canvas);
+
+        const gameLoop = setInterval(() => {
+            if (this.gameState !== 'playing') {
+                clearInterval(gameLoop);
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.fillStyle = '#0f0f23';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw puzzle pieces
+            this.drawPuzzlePieces(ctx, puzzle);
+
+            // Draw UI
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '24px Orbitron';
+            ctx.fillText(`Level: ${puzzle.level}`, 20, 30);
+            ctx.fillText(`Score: ${puzzle.score}`, 20, 60);
+
+            // Check win condition
+            if (this.checkPuzzleComplete(puzzle)) {
+                puzzle.level++;
+                puzzle.score += 100 * puzzle.level;
+                this.initPuzzlePieces(puzzle, canvas);
+                this.sounds.success();
+            }
+        }, 1000 / 60);
+
+        this.currentGameLoop = gameLoop;
+    }
+
+    // Token Collector - Collect different token types
+    initTokenCollectorGame(ctx, canvas) {
+        const collector = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            width: 40,
+            height: 40,
+            speed: 4
+        };
+
+        const tokens = [];
+        let score = 0;
+        let timeLeft = 60;
+
+        // Generate tokens
+        for (let i = 0; i < 15; i++) {
+            tokens.push({
+                x: Math.random() * (canvas.width - 40),
+                y: Math.random() * (canvas.height - 40),
+                width: 20,
+                height: 20,
+                type: ['MON', 'ETH', 'BTC', 'ADA'][Math.floor(Math.random() * 4)],
+                value: Math.floor(Math.random() * 50) + 10
+            });
+        }
+
+        const gameLoop = setInterval(() => {
+            if (this.gameState !== 'playing') {
+                clearInterval(gameLoop);
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Update and draw collector
+            this.handleCollectorInput(collector, canvas);
+            ctx.fillStyle = '#3498db';
+            ctx.fillRect(collector.x, collector.y, collector.width, collector.height);
+
+            // Draw tokens
+            tokens.forEach((token, index) => {
+                if (token) {
+                    ctx.fillStyle = this.getTokenColor(token.type);
+                    ctx.fillRect(token.x, token.y, token.width, token.height);
+                    
+                    // Draw token type
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = '12px Arial';
+                    ctx.fillText(token.type, token.x + 2, token.y + 15);
+
+                    // Collision detection
+                    if (this.checkCollision(collector, token)) {
+                        score += token.value;
+                        tokens.splice(index, 1);
+                        this.sounds.success();
+                    }
+                }
+            });
+
+            // Update timer
+            timeLeft -= 1/60;
+            if (timeLeft <= 0) {
+                this.gameOver();
+                clearInterval(gameLoop);
+            }
+
+            // Draw UI
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '20px Orbitron';
+            ctx.fillText(`Score: ${score}`, 20, 30);
+            ctx.fillText(`Time: ${Math.ceil(timeLeft)}s`, 20, 60);
+            ctx.fillText(`Tokens: ${15 - tokens.length}/15`, 20, 90);
+        }, 1000 / 60);
+
+        this.currentGameLoop = gameLoop;
+    }
+
+    // Blockchain Tetris - Tetris with smart contract blocks
+    initBlockchainTetrisGame(ctx, canvas) {
+        const tetris = {
+            board: Array(20).fill().map(() => Array(10).fill(0)),
+            currentPiece: this.getRandomPiece(),
+            x: 3,
+            y: 0,
+            score: 0,
+            lines: 0
+        };
+
+        const gameLoop = setInterval(() => {
+            if (this.gameState !== 'playing') {
+                clearInterval(gameLoop);
+                return;
+            }
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw board
+            this.drawTetrisBoard(ctx, tetris);
+
+            // Draw current piece
+            this.drawTetrisPiece(ctx, tetris.currentPiece, tetris.x, tetris.y);
+
+            // Draw UI
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '20px Orbitron';
+            ctx.fillText(`Score: ${tetris.score}`, 20, 30);
+            ctx.fillText(`Lines: ${tetris.lines}`, 20, 60);
+
+            // Move piece down
+            if (this.gameTimer % 30 === 0) {
+                if (!this.moveTetrisPiece(tetris, 0, 1)) {
+                    this.placeTetrisPiece(tetris);
+                    this.clearTetrisLines(tetris);
+                    tetris.currentPiece = this.getRandomPiece();
+                    tetris.x = 3;
+                    tetris.y = 0;
+                }
+            }
+        }, 1000 / 60);
+
+        this.currentGameLoop = gameLoop;
+    }
+
+    // Helper methods for new games
+    handleRunnerInput(runner) {
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && runner.onGround) {
+                runner.velocity = runner.jumpPower;
+                runner.onGround = false;
+            }
+        });
+    }
+
+    initPuzzlePieces(puzzle, canvas) {
+        // Create puzzle pieces for current level
+        puzzle.pieces = [];
+        const pieceCount = 3 + puzzle.level;
+        
+        for (let i = 0; i < pieceCount; i++) {
+            puzzle.pieces.push({
+                x: Math.random() * (canvas.width - 100),
+                y: Math.random() * (canvas.width - 100),
+                width: 80,
+                height: 80,
+                color: `hsl(${Math.random() * 360}, 70%, 50%)`,
+                solved: false
+            });
+        }
+    }
+
+    drawPuzzlePieces(ctx, puzzle) {
+        puzzle.pieces.forEach(piece => {
+            ctx.fillStyle = piece.color;
+            ctx.fillRect(piece.x, piece.y, piece.width, piece.height);
+            
+            if (piece.solved) {
+                ctx.fillStyle = '#00FF00';
+                ctx.fillText('✓', piece.x + 30, piece.y + 30);
+            }
+        });
+    }
+
+    checkPuzzleComplete(puzzle) {
+        return puzzle.pieces.every(piece => piece.solved);
+    }
+
+    handleCollectorInput(collector, canvas) {
+        document.addEventListener('keydown', (e) => {
+            switch(e.code) {
+                case 'ArrowUp':
+                    collector.y = Math.max(0, collector.y - collector.speed);
+                    break;
+                case 'ArrowDown':
+                    collector.y = Math.min(canvas.height - collector.height, collector.y + collector.speed);
+                    break;
+                case 'ArrowLeft':
+                    collector.x = Math.max(0, collector.x - collector.speed);
+                    break;
+                case 'ArrowRight':
+                    collector.x = Math.min(canvas.width - collector.width, collector.x + collector.speed);
+                break;
+            }
+        });
+    }
+
+    getTokenColor(type) {
+        const colors = {
+            'MON': '#FF6B6B',
+            'ETH': '#4ECDC4',
+            'BTC': '#FFD700',
+            'ADA': '#9B59B6'
+        };
+        return colors[type] || '#FFFFFF';
+    }
+
+    getRandomPiece() {
+        const pieces = [
+            [[1, 1, 1, 1]], // I
+            [[1, 1], [1, 1]], // O
+            [[1, 1, 1], [0, 1, 0]], // T
+            [[1, 1, 1], [1, 0, 0]], // L
+            [[1, 1, 1], [0, 0, 1]]  // J
+        ];
+        return pieces[Math.floor(Math.random() * pieces.length)];
+    }
+
+    drawTetrisBoard(ctx, tetris) {
+        for (let y = 0; y < tetris.board.length; y++) {
+            for (let x = 0; x < tetris.board[y].length; x++) {
+                if (tetris.board[y][x]) {
+                    ctx.fillStyle = '#4CAF50';
+                    ctx.fillRect(x * 30, y * 30, 30, 30);
+                    ctx.strokeStyle = '#2E7D32';
+                    ctx.strokeRect(x * 30, y * 30, 30, 30);
+                }
+            }
+        }
+    }
+
+    drawTetrisPiece(ctx, piece, x, y) {
+        ctx.fillStyle = '#FF6B6B';
+        for (let row = 0; row < piece.length; row++) {
+            for (let col = 0; col < piece[row].length; col++) {
+                if (piece[row][col]) {
+                    ctx.fillRect((x + col) * 30, (y + row) * 30, 30, 30);
+                    ctx.fillRect((x + col) * 30, (y + row) * 30, 30, 30);
+                    ctx.strokeStyle = '#D32F2F';
+                    ctx.strokeRect((x + col) * 30, (y + row) * 30, 30, 30);
+                }
+            }
+        }
+    }
+
+    moveTetrisPiece(tetris, dx, dy) {
+        const newX = tetris.x + dx;
+        const newY = tetris.y + dy;
+        
+        if (this.isValidTetrisMove(tetris.currentPiece, newX, newY, tetris.board)) {
+            tetris.x = newX;
+            tetris.y = y;
+            return true;
+        }
+        return false;
+    }
+
+    isValidTetrisMove(piece, x, y, board) {
+        for (let row = 0; row < piece.length; row++) {
+            if (piece[row][col]) {
+                const newX = x + col;
+                const newY = y + row;
+                
+                if (newX < 0 || newX >= 10 || newY >= 20 || 
+                    (newY >= 0 && board[newY][newX])) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    placeTetrisPiece(tetris) {
+        for (let row = 0; row < tetris.currentPiece.length; row++) {
+            for (let col = 0; col < tetris.currentPiece[row].length; col++) {
+                if (tetris.currentPiece[row][col]) {
+                    const boardY = tetris.y + row;
+                    if (boardY >= 0) {
+                        tetris.board[boardY][tetris.x + col] = 1;
+                    }
+                }
+            }
+        }
+    }
+
+    clearTetrisLines(tetris) {
+        for (let y = tetris.board.length - 1; y >= 0; y--) {
+            if (tetris.board[y].every(cell => cell === 1)) {
+                tetris.board.splice(y, 1);
+                tetris.board.unshift(Array(10).fill(0));
+                tetris.lines++;
+                tetris.score += 100;
+                this.sounds.success();
+            }
+    }
+
+    checkCollision(rect1, rect2) {
+        return rect1.x < rect2.x + rect2.width &&
+               rect1.x + rect1.width > rect2.x &&
+               rect1.y < rect2.y + rect2.height &&
+               rect1.y + rect1.height > rect2.y;
+    }
 }
 
 // Initialize the game when the page loads
