@@ -20,16 +20,22 @@ class BlessedPlayhouse {
         this.startTime = null;
         this.sounds = {};
         this.gameOverReason = '';
+        this.playerName = '';
+        this.paymentRequired = true;
         
         this.init();
     }
 
-    init() {
+    async init() {
         this.hideLoadingScreen();
         this.setupEventListeners();
+        this.initSounds();
+        
+        // Initialize blockchain systems
+        await this.initBlockchainSystems();
+        
         this.loadScores();
         this.showMenu();
-        this.initSounds();
     }
 
     hideLoadingScreen() {
@@ -39,6 +45,7 @@ class BlessedPlayhouse {
     }
 
     initSounds() {
+        try {
         // Create audio context for sound effects
         this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
         
@@ -49,6 +56,18 @@ class BlessedPlayhouse {
             error: () => this.playTone(400, 0.3),
             gameOver: () => this.playTone(200, 0.5)
         };
+            
+            console.log('Sounds initialized successfully:', Object.keys(this.sounds));
+        } catch (error) {
+            console.error('Failed to initialize sounds:', error);
+            // Fallback to silent sounds
+            this.sounds = {
+                click: () => {},
+                success: () => {},
+                error: () => {},
+                gameOver: () => {}
+            };
+        }
     }
 
     playTone(frequency, duration) {
@@ -85,18 +104,35 @@ class BlessedPlayhouse {
             this.toggleSound();
             this.sounds.click();
         });
+
         document.getElementById('fullscreenToggle').addEventListener('click', () => {
             this.toggleFullscreen();
             this.sounds.click();
         });
+
+        document.getElementById('paymentToggle').addEventListener('click', () => {
+            this.togglePaymentRequirement();
+            this.sounds.click();
+        });
+
+
+
+        // Wallet connect button - handled by wallet-manager.js
+        // Removed duplicate event listener to prevent conflicts
+        
+        // Wallet status updates handled by wallet-manager.js
+
+        // Game controls
         document.getElementById('backToMenu').addEventListener('click', () => {
             this.showMenu();
             this.sounds.click();
         });
+
         document.getElementById('pauseGame').addEventListener('click', () => {
-            this.pauseGame();
+            this.togglePause();
             this.sounds.click();
         });
+
         document.getElementById('restartGame').addEventListener('click', () => {
             this.restartGame();
             this.sounds.click();
@@ -107,6 +143,7 @@ class BlessedPlayhouse {
             this.restartGame();
             this.sounds.click();
         });
+
         document.getElementById('backToMain').addEventListener('click', () => {
             this.showMenu();
             this.sounds.click();
@@ -116,10 +153,307 @@ class BlessedPlayhouse {
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
     }
 
+    async initBlockchainSystems() {
+        try {
+            console.log('Starting blockchain systems initialization...');
+            
+            // Initialize wallet first
+            console.log('Initializing MonadWallet...');
+            window.monadWallet = new MonadWallet();
+            await window.monadWallet.init();
+            console.log('MonadWallet initialized:', !!window.monadWallet);
+            
+            // Initialize wallet manager
+            console.log('Initializing WalletManager...');
+            window.walletManager = new WalletManager();
+            await window.walletManager.init();
+            console.log('WalletManager initialized:', !!window.walletManager);
+            
+            // Initialize leaderboard
+            console.log('Initializing LeaderboardManager...');
+            window.leaderboardManager = new LeaderboardManager();
+            await window.leaderboardManager.init();
+            console.log('LeaderboardManager initialized:', !!window.leaderboardManager);
+            
+            // Initialize payment gateway
+            console.log('Initializing PaymentGateway...');
+            window.paymentGateway = new PaymentGateway();
+            await window.paymentGateway.init();
+            console.log('PaymentGateway initialized:', !!window.paymentGateway);
+            
+            console.log('Blockchain systems initialized successfully');
+            
+            // Verify all systems are working
+            if (!window.walletManager) {
+                throw new Error('Wallet manager failed to initialize');
+            }
+            if (!window.monadWallet) {
+                throw new Error('Monad wallet failed to initialize');
+            }
+            if (!window.leaderboardManager) {
+                throw new Error('Leaderboard manager failed to initialize');
+            }
+            if (!window.paymentGateway) {
+                throw new Error('Payment gateway failed to initialize');
+            }
+            
+        } catch (error) {
+            console.error('Failed to initialize blockchain systems:', error);
+            // Show user-friendly error message
+            this.showWalletRequiredMessage();
+        }
+    }
+    
+    // Show message when wallet is required
+    showWalletRequiredMessage() {
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #4ecdc4;
+            border-radius: 15px;
+            padding: 30px;
+            color: #fff;
+            text-align: center;
+            z-index: 10000;
+            max-width: 500px;
+            box-shadow: 0 0 30px rgba(78, 205, 196, 0.3);
+        `;
+        message.innerHTML = `
+            <h2 style="color: #4ecdc4; margin-bottom: 20px;">🔗 Wallet Required</h2>
+            <p style="margin-bottom: 20px;">This app requires a blockchain wallet to function.</p>
+            <p style="margin-bottom: 20px;">Please install MetaMask or a compatible wallet extension.</p>
+            <button onclick="this.parentElement.remove()" style="
+                background: linear-gradient(45deg, #4ecdc4, #6dd5ed);
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                color: white;
+                cursor: pointer;
+                font-weight: bold;
+            ">Got it</button>
+        `;
+        document.body.appendChild(message);
+    }
+
+    // Toggle payment requirement
+    togglePaymentRequirement() {
+        this.paymentRequired = !this.paymentRequired;
+        const paymentBtn = document.getElementById('paymentToggle');
+        paymentBtn.textContent = this.paymentRequired ? '💰' : '🆓';
+        
+        // Show notification
+        this.showNotification(
+            this.paymentRequired ? 'Payment Required Mode' : 'Free Play Mode',
+            this.paymentRequired ? 'Games now require 0.1 MON entry fee' : 'Games are now free to play'
+        );
+    }
+
+    // Start game with payment or free play option
     startGame(gameType) {
+        if (this.paymentRequired) {
+            // Show payment options
+            this.showPaymentOptions(gameType);
+        } else {
+            // Start free game
+            this.startFreeGame(gameType);
+        }
+    }
+    
+    // Show payment options modal
+    showPaymentOptions(gameType) {
+        const modal = document.createElement('div');
+        modal.className = 'payment-options-modal';
+        modal.innerHTML = `
+            <div class="payment-options-content">
+                <h3>Choose Your Game Mode</h3>
+                <div class="options">
+                    <div class="option premium">
+                        <h4>💎 Premium Mode</h4>
+                        <p>Play with 0.1 MON entry fee</p>
+                        <ul>
+                            <li>🏆 Compete on global leaderboard</li>
+                            <li>💰 Share in prize pool rewards</li>
+                            <li>🔗 Get on-chain records on Monad</li>
+                        </ul>
+                        <button class="premium-btn" data-game="${gameType}">Play Premium</button>
+                        </div>
+                    <div class="option free">
+                        <h4>🆓 Free Play Mode</h4>
+                        <p>Play without payment</p>
+                        <ul>
+                            <li>✅ Play all games for free</li>
+                            <li>📊 Local score tracking</li>
+                            <li>🎮 Practice and have fun</li>
+                        </ul>
+                        <button class="free-btn" data-game="${gameType}">Play Free</button>
+                        </div>
+                </div>
+                <button class="close-btn">✕</button>
+            </div>
+        `;
+        
+        // Add styles
+        const style = document.createElement('style');
+        style.textContent = `
+            .payment-options-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .payment-options-content {
+                background: linear-gradient(135deg, #1a1a2e, #16213e);
+                border-radius: 20px;
+                padding: 30px;
+                border: 2px solid #4ecdc4;
+                box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
+                max-width: 600px;
+                width: 90%;
+                position: relative;
+            }
+            .payment-options-content h3 {
+                color: #4ecdc4;
+                text-align: center;
+                margin-bottom: 30px;
+                font-size: 24px;
+            }
+            .options {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin-bottom: 20px;
+            }
+            .option {
+                background: rgba(255, 255, 255, 0.05);
+                border-radius: 15px;
+                padding: 20px;
+                text-align: center;
+                border: 2px solid transparent;
+                transition: all 0.3s ease;
+            }
+            .option:hover {
+                border-color: #4ecdc4;
+                transform: translateY(-5px);
+            }
+            .option h4 {
+                color: #4ecdc4;
+                margin-bottom: 10px;
+                font-size: 18px;
+            }
+            .option p {
+                color: #ccc;
+                margin-bottom: 15px;
+            }
+            .option ul {
+                list-style: none;
+                padding: 0;
+                margin-bottom: 20px;
+            }
+            .option li {
+                color: #888;
+                margin-bottom: 5px;
+                font-size: 14px;
+            }
+            .premium-btn, .free-btn {
+                background: linear-gradient(45deg, #4ecdc4, #6dd5ed);
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 25px;
+                font-family: 'Orbitron', monospace;
+                font-weight: bold;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                width: 100%;
+            }
+            .premium-btn:hover, .free-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+            }
+            .close-btn {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                background: #ff4444;
+                color: white;
+                border: none;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 16px;
+            }
+            @media (max-width: 768px) {
+                .options {
+                    grid-template-columns: 1fr;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Event listeners
+        modal.querySelector('.premium-btn').addEventListener('click', (e) => {
+            const gameType = e.target.dataset.game;
+            modal.remove();
+            style.remove();
+            this.startPremiumGame(gameType);
+        });
+        
+        modal.querySelector('.free-btn').addEventListener('click', (e) => {
+            const gameType = e.target.dataset.game;
+            modal.remove();
+            style.remove();
+            this.startFreeGame(gameType);
+        });
+        
+        modal.querySelector('.close-btn').addEventListener('click', () => {
+            modal.remove();
+            style.remove();
+        });
+
+        document.body.appendChild(modal);
+    }
+    
+    // Start premium game with payment
+    async startPremiumGame(gameType) {
+        try {
+            // Check if wallet is connected
+            if (!window.monadWallet || !window.monadWallet.isConnected) {
+                this.showNotification('Wallet Required', 'Please connect your wallet to play premium games');
+                window.walletManager.show();
+                return;
+            }
+
+            // Check if payment is required
+            if (window.paymentGateway.isPaymentRequiredForGame(gameType)) {
+                window.paymentGateway.show(gameType);
+                return;
+            }
+            
+            this.startGameWithPayment(gameType, this.playerName);
+        } catch (error) {
+            console.error('Failed to start premium game:', error);
+            this.showNotification('Failed to start premium game. Please try again.');
+        }
+    }
+    
+    // Start free game without payment
+    startFreeGame(gameType) {
         this.currentGame = gameType;
+        this.playerName = this.playerName || 'Player';
         this.gameState = 'playing';
         this.startTime = Date.now();
+        this.gameStartTime = Date.now();
         
         document.getElementById('gameMenu').style.display = 'none';
         document.getElementById('gameCanvas').style.display = 'block';
@@ -127,6 +461,77 @@ class BlessedPlayhouse {
         
         this.startGameTimer();
         this.initializeGame(gameType);
+    }
+
+    startGameWithPayment(gameType, playerName) {
+        try {
+            console.log('startGameWithPayment called with:', { gameType, playerName });
+            
+            // Set the player name for score submission
+            this.playerName = playerName;
+            console.log('Player name set to:', this.playerName);
+            
+            // Check if required DOM elements exist
+            const gameMenu = document.getElementById('gameMenu');
+            const gameCanvas = document.getElementById('gameCanvas');
+            const gameCanvasElement = document.getElementById('gameCanvasElement');
+            const currentGameName = document.getElementById('currentGameName');
+            
+            console.log('DOM elements found:', {
+                gameMenu: !!gameMenu,
+                gameCanvas: !!gameCanvas,
+                gameCanvasElement: !!gameCanvasElement,
+                currentGameName: !!currentGameName
+            });
+            
+            if (!gameMenu || !gameCanvas || !gameCanvasElement || !currentGameName) {
+                throw new Error('Required DOM elements not found');
+            }
+            
+        this.currentGame = gameType;
+        this.playerName = playerName;
+        this.gameState = 'playing';
+        this.startTime = Date.now();
+        this.gameStartTime = Date.now(); // Track actual game start time for duration validation
+        
+            console.log('Game state set to playing, starting timer...');
+            gameMenu.style.display = 'none';
+            gameCanvas.style.display = 'block';
+            currentGameName.textContent = this.getGameDisplayName(gameType);
+            
+            console.log('Starting game timer...');
+        this.startGameTimer();
+            
+            console.log('Initializing game:', gameType);
+        this.initializeGame(gameType);
+            
+            console.log('Premium game started successfully!');
+            
+            // Show success notification
+            this.showNotification('Game Started!', `Premium ${this.getGameDisplayName(gameType)} is now running!`);
+            
+        } catch (error) {
+            console.error('Error in startGameWithPayment:', error);
+            
+            // Reset game state on failure
+            this.gameState = 'menu';
+            if (gameMenu) gameMenu.style.display = 'block';
+            if (gameCanvas) gameCanvas.style.display = 'none';
+            
+            // Show error notification
+            this.showNotification('Game Start Failed', `Failed to start premium game: ${error.message}`);
+            
+            // Show more detailed error in console
+            console.error('Game start failure details:', {
+                error: error.message,
+                stack: error.stack,
+                gameType,
+                playerName,
+                gameState: this.gameState
+            });
+            
+            throw error; // Re-throw to be caught by the calling function
+        }
     }
 
     getGameDisplayName(gameType) {
@@ -144,37 +549,59 @@ class BlessedPlayhouse {
     }
 
     initializeGame(gameType) {
+        try {
+            console.log('initializeGame called with gameType:', gameType);
+            
         const canvas = document.getElementById('gameCanvasElement');
         const ctx = canvas.getContext('2d');
+            
+            console.log('Canvas context obtained:', !!ctx);
         
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+            console.log('Canvas cleared');
         
         switch(gameType) {
             case 'snake':
+                    console.log('Initializing snake game...');
                 this.initSnakeGame(ctx, canvas);
                 break;
             case 'memory':
+                    console.log('Initializing memory game...');
                 this.initMemoryGame(ctx, canvas);
                 break;
             case 'math':
+                    console.log('Initializing math game...');
                 this.initMathGame(ctx, canvas);
                 break;
             case 'color':
+                    console.log('Initializing color game...');
                 this.initColorGame(ctx, canvas);
                 break;
             case 'tetris':
+                    console.log('Initializing tetris game...');
                 this.initTetrisGame(ctx, canvas);
                 break;
             case 'flappy':
+                    console.log('Initializing flappy game...');
                 this.initFlappyGame(ctx, canvas);
                 break;
             case 'spelling':
+                    console.log('Initializing spelling game...');
                 this.initSpellingGame(ctx, canvas);
                 break;
             case 'carRace':
+                    console.log('Initializing car race game...');
                 this.initCarRaceGame(ctx, canvas);
                 break;
+                default:
+                    throw new Error(`Unknown game type: ${gameType}`);
+            }
+            
+            console.log('Game initialization completed successfully');
+        } catch (error) {
+            console.error('Error in initializeGame:', error);
+            throw error;
         }
     }
 
@@ -285,13 +712,20 @@ class BlessedPlayhouse {
 
     // Enhanced Memory Game with Game Over Prompt
     initMemoryGame(ctx, canvas) {
-        const cards = this.generateMemoryCards();
-        let flippedCards = [];
-        let matchedPairs = 0;
-        let canFlip = true;
-        let startTime = Date.now();
+        console.log('Memory game initializing...');
+        // Reset game state completely
+        this.memoryGameState = {
+            cards: this.generateMemoryCards(),
+            flippedCards: [],
+            matchedPairs: 0,
+            canFlip: true,
+            startTime: Date.now()
+        };
+        
+        let { cards, flippedCards, matchedPairs, canFlip, startTime } = this.memoryGameState;
 
         const drawMemoryGame = () => {
+            console.log('Drawing memory game...');
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -302,14 +736,27 @@ class BlessedPlayhouse {
                 const x = col * 100 + 200;
                 const y = row * 100 + 100;
 
-                if (card.isFlipped || card.isMatched) {
-                    ctx.fillStyle = card.isMatched ? '#00ff88' : '#00d4ff';
+                if (card.isMatched) {
+                    // Correctly matched cards - green background
+                    console.log(`Card ${index} (${card.symbol}) is MATCHED - drawing GREEN`);
+                    ctx.fillStyle = '#00ff88';
+                    ctx.fillRect(x, y, 80, 80);
+                    ctx.fillStyle = '#000';
+                    ctx.font = '40px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(card.symbol, x + 40, y + 55);
+                } else if (card.isFlipped) {
+                    // Currently flipped cards - blue background
+                    console.log(`Card ${index} (${card.symbol}) is FLIPPED - drawing BLUE`);
+                    ctx.fillStyle = '#00d4ff';
                     ctx.fillRect(x, y, 80, 80);
                     ctx.fillStyle = '#000';
                     ctx.font = '40px Arial';
                     ctx.textAlign = 'center';
                     ctx.fillText(card.symbol, x + 40, y + 55);
                 } else {
+                    // Hidden cards - pink with question mark
+                    console.log(`Card ${index} (${card.symbol}) is HIDDEN - drawing PINK with ?`);
                     ctx.fillStyle = '#ff6b9d';
                     ctx.fillRect(x, y, 80, 80);
                     ctx.fillStyle = '#fff';
@@ -336,7 +783,7 @@ class BlessedPlayhouse {
         };
 
         // Handle card clicks
-        canvas.addEventListener('click', (e) => {
+        const clickHandler = (e) => {
             if (!canFlip) return;
 
             const rect = canvas.getBoundingClientRect();
@@ -348,17 +795,24 @@ class BlessedPlayhouse {
             const index = row * 4 + col;
 
             if (index >= 0 && index < cards.length && !cards[index].isFlipped && !cards[index].isMatched) {
+                console.log(`Card ${index} clicked, flipping card with symbol: ${cards[index].symbol}`);
                 cards[index].isFlipped = true;
-                flippedCards.push(index);
+                this.memoryGameState.flippedCards.push(index);
+                flippedCards = this.memoryGameState.flippedCards;
                 this.sounds.click();
 
                 if (flippedCards.length === 2) {
+                    console.log(`Two cards flipped: ${flippedCards[0]} (${cards[flippedCards[0]].symbol}) and ${flippedCards[1]} (${cards[flippedCards[1]].symbol})`);
+                    this.memoryGameState.canFlip = false;
                     canFlip = false;
                     setTimeout(() => {
                         if (cards[flippedCards[0]].symbol === cards[flippedCards[1]].symbol) {
+                            // Correct match - keep them green
+                            console.log('Correct match! Setting cards to matched state');
                             cards[flippedCards[0]].isMatched = true;
                             cards[flippedCards[1]].isMatched = true;
-                            matchedPairs++;
+                            this.memoryGameState.matchedPairs++;
+                            matchedPairs = this.memoryGameState.matchedPairs;
                             this.sounds.success();
                             
                             if (matchedPairs === 8) {
@@ -368,20 +822,33 @@ class BlessedPlayhouse {
                                 this.gameOver('memory', 'All pairs matched!');
                             }
                         } else {
+                            // Wrong match - flip them back to question marks
+                            console.log('Wrong match detected, flipping cards back...');
                             cards[flippedCards[0]].isFlipped = false;
                             cards[flippedCards[1]].isFlipped = false;
                             this.sounds.error();
+                            console.log('Cards flipped back to question marks');
                         }
-                        flippedCards = [];
-                        canFlip = true;
-                    }, 1000);
+                        this.memoryGameState.flippedCards = [];
+                        this.memoryGameState.canFlip = true;
+                        flippedCards = this.memoryGameState.flippedCards;
+                        canFlip = this.memoryGameState.canFlip;
+                    }, 1000); // 1 second delay to show the wrong pair
                 }
             }
-        });
+        };
+        
+        canvas.addEventListener('click', clickHandler);
+        
+        // Store cleanup function
+        this.cleanupListeners = () => {
+            canvas.removeEventListener('click', clickHandler);
+        };
 
         // Start drawing loop
         const gameLoop = setInterval(() => {
             if (this.gameState !== 'playing') {
+                console.log('Memory game loop stopped - game state:', this.gameState);
                 clearInterval(gameLoop);
                 return;
             }
@@ -392,7 +859,7 @@ class BlessedPlayhouse {
     }
 
     generateMemoryCards() {
-        const symbols = ['🐍', '🧠', '🔢', '🎨', '⭐', '🌟', '��', '🔥'];
+        const symbols = ['🐍', '🧠', '🔢', '🎨', '⭐', '🌟', '🎉', '🔥'];
         const cards = [...symbols, ...symbols];
         
         // Shuffle cards
@@ -410,12 +877,20 @@ class BlessedPlayhouse {
 
     // Enhanced Math Game with Game Over Prompt
     initMathGame(ctx, canvas) {
-        let currentProblem = this.generateMathProblem();
-        let userAnswer = '';
-        let timeLeft = 30;
-        let level = 1;
+        console.log('Math game initializing...');
+        // Reset game state completely
+        this.mathGameState = {
+            currentProblem: this.generateMathProblem(),
+            userAnswer: '',
+            timeLeft: 30,
+            level: 1,
+            isGameOver: false
+        };
+        
+        let { currentProblem, userAnswer, timeLeft, level } = this.mathGameState;
 
         const drawMathGame = () => {
+            console.log('Drawing math game...');
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -445,28 +920,49 @@ class BlessedPlayhouse {
         };
 
         // Handle keyboard input
-        document.addEventListener('keydown', (e) => {
+        const keydownHandler = (e) => {
+            if (this.mathGameState.isGameOver) return;
+            
             if (e.key >= '0' && e.key <= '9') {
-                userAnswer += e.key;
+                this.mathGameState.userAnswer += e.key;
+                userAnswer = this.mathGameState.userAnswer;
                 this.sounds.click();
             } else if (e.key === 'Backspace') {
-                userAnswer = userAnswer.slice(0, -1);
+                this.mathGameState.userAnswer = this.mathGameState.userAnswer.slice(0, -1);
+                userAnswer = this.mathGameState.userAnswer;
                 this.sounds.click();
             } else if (e.key === 'Enter') {
                 if (parseInt(userAnswer) === currentProblem.answer) {
                     this.scores.math += 10;
                     this.updateScore('math');
-                    level++;
-                    timeLeft += 10;
-                    currentProblem = this.generateMathProblem(level);
-                    userAnswer = '';
+                    this.mathGameState.level++;
+                    this.mathGameState.timeLeft += 10;
+                    this.mathGameState.currentProblem = this.generateMathProblem(this.mathGameState.level);
+                    this.mathGameState.userAnswer = '';
+                    level = this.mathGameState.level;
+                    timeLeft = this.mathGameState.timeLeft;
+                    currentProblem = this.mathGameState.currentProblem;
+                    userAnswer = this.mathGameState.userAnswer;
                     this.sounds.success();
                 } else {
                     this.sounds.error();
+                    console.log('Wrong answer entered, showing game over...');
+                    this.mathGameState.isGameOver = true;
+                    // Immediately show game over for wrong answer
+                    setTimeout(() => {
+                        console.log('Calling gameOver for wrong answer');
                     this.gameOver('math', 'Wrong answer!');
+                    }, 100); // Very short delay to ensure smooth transition
                 }
             }
-        });
+        };
+        
+        document.addEventListener('keydown', keydownHandler);
+        
+        // Store cleanup function
+        this.cleanupListeners = () => {
+            document.removeEventListener('keydown', keydownHandler);
+        };
 
         // Timer countdown
         const timer = setInterval(() => {
@@ -484,6 +980,7 @@ class BlessedPlayhouse {
         // Start drawing loop
         const gameLoop = setInterval(() => {
             if (this.gameState !== 'playing') {
+                console.log('Math game loop stopped - game state:', this.gameState);
                 clearInterval(gameLoop);
                 return;
             }
@@ -524,13 +1021,21 @@ class BlessedPlayhouse {
 
     // Enhanced Color Game with Game Over Prompt
     initColorGame(ctx, canvas) {
+        console.log('Color game initializing...');
         const colors = ['#ff6b9d', '#00ff88', '#00d4ff', '#ffd700', '#ff4500'];
-        let currentColor = colors[0];
-        let targetColor = colors[0];
-        let score = 0;
-        let timeLeft = 60;
+        // Reset game state completely
+        this.colorGameState = {
+            currentColor: colors[0],
+            targetColor: colors[0],
+            score: 0,
+            timeLeft: 60,
+            isGameOver: false
+        };
+        
+        let { currentColor, targetColor, score, timeLeft } = this.colorGameState;
 
         const drawColorGame = () => {
+            console.log('Drawing color game...');
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -566,7 +1071,9 @@ class BlessedPlayhouse {
         };
 
         // Handle color selection
-        canvas.addEventListener('click', (e) => {
+        const clickHandler = (e) => {
+            if (this.colorGameState.isGameOver) return;
+            
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -577,20 +1084,35 @@ class BlessedPlayhouse {
                     const colorX = 400 + (i * 80);
                     if (x >= colorX && x <= colorX + 60) {
                         if (colors[i] === targetColor) {
-                            score += 10;
-                            this.scores.color = score;
+                            this.colorGameState.score += 10;
+                            this.scores.color = this.colorGameState.score;
                             this.updateScore('color');
-                            targetColor = colors[Math.floor(Math.random() * colors.length)];
+                            this.colorGameState.targetColor = colors[Math.floor(Math.random() * colors.length)];
+                            score = this.colorGameState.score;
+                            targetColor = this.colorGameState.targetColor;
                             this.sounds.success();
                         } else {
                             this.sounds.error();
+                            console.log('Wrong color selected, showing game over...');
+                            this.colorGameState.isGameOver = true;
+                            // Immediately show game over for wrong color
+                            setTimeout(() => {
+                                console.log('Calling gameOver for wrong color');
                             this.gameOver('color', 'Wrong color!');
+                            }, 100); // Very short delay to ensure smooth transition
                         }
                         break;
                     }
                 }
             }
-        });
+        };
+        
+        canvas.addEventListener('click', clickHandler);
+        
+        // Store cleanup function
+        this.cleanupListeners = () => {
+            canvas.removeEventListener('click', clickHandler);
+        };
 
         // Timer countdown
         const timer = setInterval(() => {
@@ -608,6 +1130,7 @@ class BlessedPlayhouse {
         // Start drawing loop
         const gameLoop = setInterval(() => {
             if (this.gameState !== 'playing') {
+                console.log('Color game loop stopped - game state:', this.gameState);
                 clearInterval(gameLoop);
                 return;
             }
@@ -1043,11 +1566,17 @@ class BlessedPlayhouse {
             width: 50,
             height: 80,
             speed: 0,
-            maxSpeed: 48, // Increased by 6x from 8
-            acceleration: 1.2, // Increased by 6x from 0.2
-            deceleration: 0.6, // Increased by 6x from 0.1
-            turnSpeed: 18 // Increased by 6x from 3
+            maxSpeed: 40, // Increased by 5x from 8 (500% increase)
+            acceleration: 1.0, // Increased by 5x from 0.2 (500% increase)
+            deceleration: 0.5, // Increased by 5x from 0.1 (500% increase)
+            turnSpeed: 15 // Increased by 5x from 3 (500% increase)
         };
+        console.log('Car race initialized with 500% increased speed:', {
+            maxSpeed: car.maxSpeed,
+            acceleration: car.acceleration,
+            deceleration: car.deceleration,
+            turnSpeed: car.turnSpeed
+        });
         
         const obstacles = [];
         let score = 0;
@@ -1126,7 +1655,7 @@ class BlessedPlayhouse {
             
             // Move obstacles
             obstacles.forEach(obstacle => {
-                obstacle.y += 18; // Increased by 6x from 3
+                obstacle.y += 15; // Increased by 5x from 3 (500% increase)
                 if (obstacle.y > canvas.height) {
                     score++;
                     this.scores.carRace = score;
@@ -1303,7 +1832,7 @@ class BlessedPlayhouse {
     }
 
     // Enhanced Game Over with Reason Display
-    gameOver(gameType, reason = '') {
+    async gameOver(gameType, reason = '') {
         this.gameState = 'gameOver';
         this.gameOverReason = reason;
         clearInterval(this.gameTimer);
@@ -1314,6 +1843,23 @@ class BlessedPlayhouse {
             this.cleanupListeners();
         }
 
+        // Submit score to leaderboard if payment was made
+        console.log('Game over - checking score submission conditions:', {
+            paymentRequired: this.paymentRequired,
+            playerName: this.playerName,
+            hasScore: this.scores[gameType] > 0
+        });
+        
+        if (this.paymentRequired && this.playerName) {
+            console.log('Score submission conditions met, submitting score...');
+            await this.submitScoreToLeaderboard(gameType);
+        } else {
+            console.log('Score submission conditions NOT met:', {
+                paymentRequired: this.paymentRequired,
+                playerName: this.playerName
+            });
+        }
+
         document.getElementById('overlayTitle').textContent = 'Game Over!';
         document.getElementById('overlayMessage').innerHTML = `
             <div style="margin-bottom: 15px;">
@@ -1322,6 +1868,7 @@ class BlessedPlayhouse {
             <div>
                 Your score: <span id="overlayScore">${this.scores[gameType]}</span>
             </div>
+            ${this.paymentRequired ? '<div style="margin-top: 10px; color: #00ff88;">Score submitted to leaderboard!</div>' : ''}
         `;
         document.getElementById('overlayScore').textContent = this.scores[gameType];
         document.getElementById('gameOverlay').style.display = 'flex';
@@ -1330,11 +1877,37 @@ class BlessedPlayhouse {
         this.saveScores();
     }
 
+    // Submit score to leaderboard
+    async submitScoreToLeaderboard(gameType) {
+        try {
+            const gameTypeMap = {
+                'snake': 0, 'memory': 1, 'math': 2, 'color': 3,
+                'tetris': 4, 'flappy': 5, 'spelling': 6, 'carRace': 7
+            };
+            
+            const blockchainGameType = gameTypeMap[gameType];
+            if (blockchainGameType && this.scores[gameType] > 0) {
+                // Calculate game duration in seconds
+                const gameDuration = Math.floor((Date.now() - this.gameStartTime) / 1000);
+                
+                await window.leaderboardManager.submitScore(
+                    blockchainGameType, 
+                    this.scores[gameType], 
+                    this.playerName,
+                    gameDuration
+                );
+            }
+        } catch (error) {
+            console.error('Failed to submit score to leaderboard:', error);
+        }
+    }
+
     restartGame() {
         document.getElementById('gameOverlay').style.display = 'none';
         this.startGame(this.currentGame);
     }
 
+    // Show the main game menu
     showMenu() {
         this.gameState = 'menu';
         clearInterval(this.gameTimer);
@@ -1352,7 +1925,7 @@ class BlessedPlayhouse {
         this.updateScoreDisplays();
     }
 
-    pauseGame() {
+    togglePause() {
         if (this.gameState === 'playing') {
             this.gameState = 'paused';
             clearInterval(this.currentGameLoop);
@@ -1362,49 +1935,302 @@ class BlessedPlayhouse {
         }
     }
 
+    // Toggle sound on/off
     toggleSound() {
         this.soundEnabled = !this.soundEnabled;
-        const btn = document.getElementById('soundToggle');
-        btn.textContent = this.soundEnabled ? '🔊' : '🔇';
+        const soundBtn = document.getElementById('soundToggle');
+        soundBtn.textContent = this.soundEnabled ? '🔊' : '🔇';
+        console.log('Sound', this.soundEnabled ? 'enabled' : 'disabled');
     }
 
+    // Toggle fullscreen
     toggleFullscreen() {
         if (!document.fullscreenElement) {
-            document.documentElement.requestFullscreen();
+            document.documentElement.requestFullscreen().catch(err => {
+                console.error('Error attempting to enable fullscreen:', err);
+            });
         } else {
             document.exitFullscreen();
         }
     }
 
-    updateScore(gameType) {
-        this.scores[gameType] = Math.max(this.scores[gameType], this.scores[gameType]);
-        this.updateScoreDisplays();
+    showNotification(title, message) {
+        const notification = document.createElement('div');
+        notification.className = 'notification';
+        notification.innerHTML = `
+            <div class="notification-content">
+                <h4>${title}</h4>
+                <p>${message}</p>
+            </div>
+        `;
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(45deg, #00ff88, #4ecdc4);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            animation: slideDown 0.3s ease;
+        `;
+        
+        // Add animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideDown {
+                from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+                to { transform: translateX(-50%) translateY(0); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+            style.remove();
+        }, 3000);
     }
 
-    updateScoreDisplays() {
-        document.getElementById('snakeScore').textContent = this.scores.snake;
-        document.getElementById('memoryTime').textContent = this.scores.memory > 0 ? `${this.scores.memory}s` : '--';
-        document.getElementById('mathLevel').textContent = Math.floor(this.scores.math / 10) + 1;
-        document.getElementById('colorScore').textContent = this.scores.color;
-        document.getElementById('tetrisLines').textContent = this.scores.tetris / 10;
-        document.getElementById('flappyScore').textContent = this.scores.flappy;
-        document.getElementById('spellingWords').textContent = this.scores.spelling;
-        document.getElementById('carRaceLaps').textContent = this.scores.carRace;
+    showWalletPrompt(reason, action) {
+        const prompt = document.createElement('div');
+        prompt.className = 'wallet-prompt';
+        prompt.innerHTML = `
+            <div class="prompt-content">
+                <div class="prompt-header">
+                    <h3>🔗 Wallet Required</h3>
+                    <button class="close-prompt">×</button>
+                </div>
+                <div class="prompt-body">
+                    <p><strong>Reason:</strong> ${reason}</p>
+                    <p><strong>Action:</strong> ${action}</p>
+                    <div class="prompt-actions">
+                        <button class="connect-wallet-prompt">Connect Wallet</button>
+                        <button class="cancel-prompt">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        prompt.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        `;
+        
+        const content = prompt.querySelector('.prompt-content');
+        content.style.cssText = `
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 20px;
+            padding: 30px;
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+            max-width: 400px;
+            width: 90%;
+        `;
+        
+        const header = prompt.querySelector('.prompt-header');
+        header.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ff6b6b;
+            padding-bottom: 15px;
+        `;
+        
+        const title = prompt.querySelector('h3');
+        title.style.cssText = `
+            color: #ff6b6b;
+            font-family: 'Orbitron', monospace;
+            margin: 0;
+            font-size: 20px;
+        `;
+        
+        const closeBtn = prompt.querySelector('.close-prompt');
+        closeBtn.style.cssText = `
+            background: #ff4444;
+            color: white;
+            border: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        `;
+        
+        const body = prompt.querySelector('.prompt-body');
+        body.style.cssText = `
+            color: #ccc;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        `;
+        
+        const actions = prompt.querySelector('.prompt-actions');
+        actions.style.cssText = `
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        `;
+        
+        const connectBtn = prompt.querySelector('.connect-wallet-prompt');
+        connectBtn.style.cssText = `
+            background: linear-gradient(45deg, #4ecdc4, #6dd5ed);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        `;
+        
+        const cancelBtn = prompt.querySelector('.cancel-prompt');
+        cancelBtn.style.cssText = `
+            background: rgba(255, 107, 157, 0.2);
+            border: 2px solid #ff6b9d;
+            color: #ff6b9d;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        `;
+        
+        // Event listeners
+        closeBtn.addEventListener('click', () => prompt.remove());
+        cancelBtn.addEventListener('click', () => prompt.remove());
+        connectBtn.addEventListener('click', () => {
+            prompt.remove();
+            window.walletManager.show();
+        });
+        
+        document.body.appendChild(prompt);
     }
 
+    // Test method for debugging game system
+    testGameSystem() {
+        console.log('Testing game system...');
+        console.log('Current state:', {
+            gameState: this.gameState,
+            currentGame: this.currentGame,
+            playerName: this.playerName,
+            paymentRequired: this.paymentRequired
+        });
+        
+        // Test DOM elements
+        const elements = {
+            gameMenu: document.getElementById('gameMenu'),
+            gameCanvas: document.getElementById('gameCanvas'),
+            gameCanvasElement: document.getElementById('gameCanvasElement'),
+            currentGameName: document.getElementById('currentGameName')
+        };
+        
+        console.log('DOM elements:', elements);
+        
+        // Test if methods exist
+        const methods = {
+            startGameTimer: typeof this.startGameTimer,
+            initializeGame: typeof this.initializeGame,
+            initSnakeGame: typeof this.initSnakeGame,
+            showNotification: typeof this.showNotification
+        };
+        
+        console.log('Methods:', methods);
+        
+        return {
+            state: this.gameState,
+            elements: Object.keys(elements).map(key => ({ key, exists: !!elements[key] })),
+            methods: methods
+        };
+    }
+
+    // Load scores from localStorage
     loadScores() {
-        const saved = localStorage.getItem('blessedPlayhouseScores');
-        if (saved) {
-            this.scores = { ...this.scores, ...JSON.parse(saved) };
+        try {
+            const savedScores = localStorage.getItem('blessedPlayhouseScores');
+            if (savedScores) {
+                this.scores = { ...this.scores, ...JSON.parse(savedScores) };
+                console.log('Scores loaded from localStorage:', this.scores);
+            }
+        } catch (error) {
+            console.error('Failed to load scores:', error);
         }
     }
 
+    // Save scores to localStorage
     saveScores() {
+        try {
         localStorage.setItem('blessedPlayhouseScores', JSON.stringify(this.scores));
+            console.log('Scores saved to localStorage:', this.scores);
+        } catch (error) {
+            console.error('Failed to save scores:', error);
+        }
     }
+
+    // Update score displays
+    updateScoreDisplays() {
+        try {
+            const elements = {
+                snakeScore: document.getElementById('snakeScore'),
+                memoryTime: document.getElementById('memoryTime'),
+                mathLevel: document.getElementById('mathLevel'),
+                colorScore: document.getElementById('colorScore'),
+                tetrisLines: document.getElementById('tetrisLines'),
+                flappyScore: document.getElementById('flappyScore'),
+                spellingWords: document.getElementById('spellingWords'),
+                carRaceLaps: document.getElementById('carRaceLaps')
+            };
+
+            // Update each score display if the element exists
+            if (elements.snakeScore) elements.snakeScore.textContent = this.scores.snake || 0;
+            if (elements.memoryTime) elements.memoryTime.textContent = this.scores.memory > 0 ? `${this.scores.memory}s` : '--';
+            if (elements.mathLevel) elements.mathLevel.textContent = Math.floor((this.scores.math || 0) / 10) + 1;
+            if (elements.colorScore) elements.colorScore.textContent = this.scores.color || 0;
+            if (elements.tetrisLines) elements.tetrisLines.textContent = Math.floor((this.scores.tetris || 0) / 10);
+            if (elements.flappyScore) elements.flappyScore.textContent = this.scores.flappy || 0;
+            if (elements.spellingWords) elements.spellingWords.textContent = this.scores.spelling || 0;
+            if (elements.carRaceLaps) elements.carRaceLaps.textContent = this.scores.carRace || 0;
+        } catch (error) {
+            console.error('Failed to update score displays:', error);
+        }
+    }
+
+    // Update a specific score
+    updateScore(gameType) {
+        if (this.scores && this.scores[gameType] !== undefined) {
+            this.scores[gameType] = Math.max(this.scores[gameType] || 0, this.scores[gameType] || 0);
+            this.updateScoreDisplays();
+            this.saveScores();
+        }
+    }
+
+
+
+
+
+
+
+
 }
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    new BlessedPlayhouse();
+    window.blessedPlayhouse = new BlessedPlayhouse();
 });

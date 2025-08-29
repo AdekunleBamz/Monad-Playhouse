@@ -1,148 +1,140 @@
-# 🎮 Bakhryaan Blessed Playhouse - Arcade Collection
+# 🎮 Monad Playhouse - Mission 7 Game Jam Entry
 
-> **A Modern, Beautiful Arcade Experience Built on Bless Network**
+> **Multi-Game Platform with Blockchain Leaderboards on Monad Testnet**
 
-## 🌟 **About This App**
+## 🏆 Mission 7 Submission
 
-**Bakhryaan Blessed Playhouse** is a stunning, modern arcade collection that showcases the power of decentralized web development on the Bless Network. This isn't just another arcade - it's a **Blessed Gaming Experience** that combines beautiful aesthetics with engaging gameplay.
+**Category**: New Games  
+**Prize Tier**: 1st Place (4000 Testnet MON)  
+**Submission**: [Monad Game Jam 2024](https://tally.so/r/wz6PDa)
 
-## 🎯 **What Makes It Special**
+## 🎯 Project Overview
 
-- **🎨 Modern Design**: Neon aesthetics with glassmorphism effects
-- **🚀 Decentralized**: Hosted on Bless Network with IPFS storage
-- **📱 Responsive**: Works perfectly on all devices
-- **🔊 Interactive**: Full sound system with toggle functionality
-- **⚡ Fast**: Optimized for smooth gameplay experience
+Monad Playhouse is a comprehensive gaming platform built specifically for the Monad blockchain, featuring multiple games with real-time leaderboards, blockchain integration, and a unique gaming experience.
 
-## 🎮 **Game Collection**
+## 🎮 Available Games
 
-### 1. **🐍 Neon Snake**
-- Classic snake gameplay with neon aesthetics
-- Smooth animations and glowing effects
-- Progressive difficulty as you grow longer
-- High score tracking
+### 1. **Math Challenge** 🧮
+- Solve mathematical problems under time pressure
+- Score based on speed and accuracy
+- Real-time blockchain score submission
 
-### 2. **🧠 Memory Match**
-- Beautiful card matching game
-- Engaging visual design with emojis
-- Best time tracking
-- Perfect for testing memory skills
-
-### 3. **🔢 Quick Math**
-- Fast-paced mathematical challenges
+### 2. **Memory Master** 🧠
+- Classic memory card game with Monad twist
 - Progressive difficulty levels
-- Time-based gameplay
-- Educational and fun
+- Global leaderboard rankings
 
-### 4. **🎨 Color Rush**
-- Exciting color matching game
-- Vibrant visual design
-- Score-based progression
-- Quick reaction gameplay
+### 3. **Snake Adventure** 🐍
+- Classic snake game with blockchain obstacles
+- Score tracking and persistence
+- Competitive gameplay
 
-### 5. **🧩 Neon Tetris**
-- Classic block stacking with neon glow
-- Smooth piece rotation and movement
-- Line clearing mechanics
-- Progressive scoring system
+### 4. **Color Rush** 🎨
+- Fast-paced color matching game
+- Increasing difficulty
+- Real-time score updates
 
-### 6. **�� Flappy Bird**
-- Navigate through neon pipes
-- Smooth physics and controls
-- Score tracking
-- Challenging gameplay
+### 5. **Tetris Blocks** 🧩
+- Blockchain-themed Tetris
+- Smart contract integration
+- Global competition
 
-## ✨ **Technical Features**
+## 🚀 Features
 
-- **Modern Web Technologies**: HTML5, CSS3, JavaScript ES6+
-- **Responsive Design**: Mobile-first approach
-- **Sound System**: Interactive audio feedback
-- **Game State Management**: Seamless transitions
-- **Local Storage**: Score persistence across sessions
-- **Cross-Browser Compatible**: Works everywhere
+- **🔗 Wallet Integration**: MetaMask and compatible wallets
+- **📊 Real-time Leaderboards**: Live blockchain data
+- **💰 Entry Fee System**: 0.1 MON per game
+- **🏆 Score Persistence**: On-chain record keeping
+- **🎯 Multiple Game Types**: Variety of gaming experiences
+- **📱 Responsive Design**: Works on all devices
+- **🌐 Open Source**: Full transparency for judges
 
-## 🚀 **Deployment**
+## 🛠️ Technology Stack
 
-- **Network**: Bless Network
-- **Storage**: IPFS (InterPlanetary File System)
-- **URL**: [Live Arcade](https://fuchsia-clownfish-vanna-oii6l24i.bls.dev)
-- **CID**: `bafybeibsxysqcp4b3pzudetgrf5nr7ufxix25h5blzmlh6qiv2ug5giwfi`
+- **Frontend**: Vanilla JavaScript, HTML5, CSS3
+- **Blockchain**: Monad Testnet (Chain ID: 10143)
+- **Smart Contracts**: Solidity with Web3 integration
+- **Hosting**: Vercel (Professional deployment)
+- **Wallet**: MetaMask integration
 
-## 🛠 **Built With**
+## 🚀 Quick Start
 
-- **Bless Network CLI**: For deployment and management
-- **TypeScript**: For robust development
-- **Modern CSS**: Grid, Flexbox, and animations
-- **Canvas API**: For smooth game rendering
-- **Web Audio API**: For sound effects
+### Prerequisites
+- MetaMask or compatible wallet
+- Monad Testnet configured
+- MON tokens for entry fees
 
-## 🎨 **Design Philosophy**
-
-The arcade follows a **"Blessed Gaming Experience"** philosophy:
-- **Beautiful**: Every pixel is crafted with care
-- **Engaging**: Games that keep you coming back
-- **Accessible**: Easy to play, hard to master
-- **Modern**: Cutting-edge web technologies
-- **Responsive**: Perfect on any device
-
-## 🌐 **Live Demo**
-
-**Experience the arcade live:** [https://fuchsia-clownfish-vanna-oii6l24i.bls.dev](https://fuchsia-clownfish-vanna-oii6l24i.bls.dev)
-
-## 🔧 **Local Development**
-
+### Installation
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd bakhryaan-blessed-playhouse
+git clone https://github.com/AdekunleBamz/Monad-Playhouse.git
+cd Monad-Playhouse
 
-# Install dependencies
-npm install
-
-# Start local development server
-npx blessnet preview serve
-
-# Deploy to Bless Network
-npx blessnet deploy --env development
+# Start development server
+npm run dev
+# or
+python3 -m http.server 8080
 ```
 
-## 📱 **Device Compatibility**
+### Play Games
+1. **Connect Wallet**: Click the wallet button
+2. **Switch to Monad Testnet**: Chain ID 10143
+3. **Deposit MON**: 0.1 MON per game
+4. **Choose Game**: Select from available games
+5. **Compete**: Beat your high scores
+6. **Leaderboard**: View global rankings
 
-- ✅ **Desktop**: Full experience with keyboard controls
-- ✅ **Tablet**: Touch-friendly interface
-- ✅ **Mobile**: Responsive design for all screen sizes
-- ✅ **All Browsers**: Cross-platform compatibility
+## 🌐 Live Demo
 
-## 🎵 **Sound Features**
+**URL**: [Monad Playhouse](https://monad-playhouse.vercel.app)  
+**Testnet**: Monad Testnet (Chain ID: 10143)  
+**Contract**: `0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6`
 
-- **Click Sounds**: Interactive feedback
-- **Success Sounds**: Achievement celebrations
-- **Error Sounds**: Game over notifications
-- **Toggle Control**: Enable/disable sound
-- **Web Audio API**: High-quality audio
+## 🏗️ Architecture
 
-## �� **Scoring System**
+```
+Monad Playhouse/
+├── public/                 # Static assets
+│   ├── index.html         # Main application
+│   ├── style.css          # Styling
+│   ├── script.js          # Main game logic
+│   ├── wallet.js          # Blockchain integration
+│   ├── wallet-manager.js  # Wallet management
+│   ├── leaderboard.js     # Leaderboard system
+│   ├── payment.js         # Payment gateway
+│   └── config/            # Configuration files
+├── contracts/             # Smart contract source
+├── README.md             # This file
+└── package.json          # Project configuration
+```
 
-Each game features unique scoring:
-- **Snake**: Points for food collection
-- **Memory**: Best completion time
-- **Math**: Level progression
-- **Color**: Score accumulation
-- **Tetris**: Lines cleared
-- **Flappy**: Distance traveled
+## 🎯 Mission 7 Compliance
 
-## 🌟 **Why Bless Network?**
+✅ **Open Source**: Full code transparency  
+✅ **Novel Experience**: Multi-game platform with blockchain integration  
+✅ **Built for Monad**: Direct blockchain integration  
+✅ **Team**: Solo developer (AdekunleBamz)  
+✅ **Deadline**: Submitted before Aug 31  
 
-- **Decentralized**: No single point of failure
-- **Permanent**: IPFS storage ensures longevity
-- **Fast**: Global CDN distribution
-- **Secure**: Blockchain-based verification
-- **Future-Proof**: Web3 infrastructure
+## 🏆 Competition Advantages
 
-## 🎉 **Special Thanks**
+1. **Multiple Games**: Shows versatility and effort
+2. **Blockchain Integration**: Real Monad smart contracts
+3. **Professional Quality**: Clean code and UI/UX
+4. **Innovation**: Novel gaming platform concept
+5. **Documentation**: Comprehensive project documentation
 
-Built with ❤️ by **BamzzStudio** on **Bless Network**
+## 🔗 Links
+
+- **Repository**: [https://github.com/AdekunleBamz/Monad-Playhouse](https://github.com/AdekunleBamz/Monad-Playhouse)
+- **Mission 7**: [Monad Game Jam 2024](https://tally.so/r/wz6PDa)
+- **Resources**: [Monad Foundation Resources](https://monad-foundation.notion.site/Mission-7-Monad-Game-Jam-Resources-24d6367594f280268926d344b)
+- **Live Demo**: [Monad Playhouse](https://monad-playhouse.vercel.app)
+
+## 📝 License
+
+MIT License - See LICENSE file for details
 
 ---
 
-**Experience the future of gaming on the decentralized web!** 🚀✨
+**Built with ❤️ for Monad Mission 7 Game Jam 2024**

@@ -77,6 +77,21 @@ body {
     box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
 }
 
+.wallet-btn {
+    background: linear-gradient(45deg, #4ecdc4, #6dd5ed);
+    border-color: #4ecdc4;
+}
+
+.wallet-btn.connected {
+    background: linear-gradient(45deg, #00ff88, #4ecdc4);
+    border-color: #00ff88;
+}
+
+.wallet-btn.connected::after {
+    content: " ✓";
+    color: #fff;
+}
+
 /* Game Menu Styles */
 .game-menu {
     padding: 3rem 2rem;
@@ -388,3 +403,57 @@ body {
 .game-card:nth-child(5) { animation-delay: 0.5s; }
 .game-card:nth-child(6) { animation-delay: 0.6s; }
 /* Footer Styles */ .game-footer { background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(20px); padding: 1rem 2rem; text-align: center; border-top: 2px solid #00ff88; margin-top: auto; } .game-footer p { color: #00ff88; font-size: 1rem; font-weight: 400; letter-spacing: 1px; } .game-footer strong { color: #ff6b9d; }
+
+/* Wallet Details Section */
+.wallet-details {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 2px solid #4ecdc4;
+    border-radius: 15px;
+    margin: 20px auto;
+    max-width: 800px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(78, 205, 196, 0.3);
+}
+
+.wallet-info {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.wallet-info > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.wallet-info .label {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 5px;
+    font-family: 'Exo 2', sans-serif;
+}
+
+.wallet-info .value {
+    font-size: 16px;
+    color: #4ecdc4;
+    font-weight: bold;
+    font-family: 'Orbitron', monospace;
+}
+
+#walletAddress {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+    .wallet-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+}

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <title>Bakhryaan Blessed Playhouse - Arcade Collection</title>
+    <title>Monad Playhouse - Mission 7 Game Jam</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
@@ -13,14 +13,43 @@
         <!-- Header Section -->
         <header class="game-header">
             <div class="logo-container">
-                <h1 class="main-title">Bakhryaan Blessed Playhouse</h1>
-                <div class="subtitle">Blessed Gaming Experience</div>
+                <h1 class="main-title">Monad Playhouse</h1>
+                <div class="subtitle">Blockchain Gaming on Monad</div>
             </div>
             <div class="header-controls">
+                <button id="walletConnect" class="control-btn wallet-btn" title="Connect Wallet">🔗</button>
+        
                 <button id="soundToggle" class="control-btn">🔊</button>
                 <button id="fullscreenToggle" class="control-btn">⛶</button>
+                <button id="paymentToggle" class="control-btn" title="Toggle Payment Requirement">💰</button>
             </div>
         </header>
+
+        <!-- Wallet Details Section -->
+        <div id="walletDetails" class="wallet-details" style="display: none;">
+            <div class="wallet-info">
+                <div class="wallet-address">
+                    <span class="label">Address:</span>
+                    <span id="walletAddress" class="value">Not connected</span>
+                </div>
+                <div class="wallet-balance">
+                    <span class="label">Balance:</span>
+                    <span id="walletBalance" class="value">0 MON</span>
+                </div>
+                <div class="deposit-amount">
+                    <span class="label">Entry Fee:</span>
+                    <span id="depositAmount" class="value">0.1 MON</span>
+                </div>
+                <div class="user-deposited">
+                    <span class="label">Total Deposited:</span>
+                    <span id="userDeposited" class="value">0 MON</span>
+                </div>
+                <div class="username-display">
+                    <span class="label">Username:</span>
+                    <span id="usernameDisplay" class="value">Not set</span>
+                </div>
+            </div>
+        </div>
 
         <!-- Game Selection Menu -->
         <div id="gameMenu" class="game-menu">
@@ -28,7 +57,7 @@
             <div class="game-grid">
                 <div class="game-card" data-game="snake">
                     <div class="game-icon">🐍</div>
-                    <h3>Neon Snake</h3>
+                    <h3>Snake Adventure</h3>
                     <p>Classic snake with neon aesthetics</p>
                     <div class="game-stats">
                         <span>High Score: <span id="snakeScore">0</span></span>
@@ -36,7 +65,7 @@
                 </div>
                 <div class="game-card" data-game="memory">
                     <div class="game-icon">🧠</div>
-                    <h3>Memory Match</h3>
+                    <h3>Memory Master</h3>
                     <p>Test your memory with beautiful cards</p>
                     <div class="game-stats">
                         <span>Best Time: <span id="memoryTime">--</span></span>
@@ -44,7 +73,7 @@
                 </div>
                 <div class="game-card" data-game="math">
                     <div class="game-icon">🔢</div>
-                    <h3>Quick Math</h3>
+                    <h3>Math Challenge</h3>
                     <p>Fast-paced mathematical challenges</p>
                     <div class="game-stats">
                         <span>Level: <span id="mathLevel">1</span></span>
@@ -60,7 +89,7 @@
                 </div>
                 <div class="game-card" data-game="tetris">
                     <div class="game-icon">🧩</div>
-                    <h3>Neon Tetris</h3>
+                    <h3>Tetris Blocks</h3>
                     <p>Classic block stacking with neon glow</p>
                     <div class="game-stats">
                         <span>Lines: <span id="tetrisLines">0</span></span>
@@ -123,17 +152,21 @@
         <div id="loadingScreen" class="loading-screen">
             <div class="loading-content">
                 <div class="loading-spinner"></div>
-                <h2>Loading Blessed Playhouse...</h2>
+                <h2>Loading Monad Playhouse...</h2>
                 <p>Preparing your gaming experience</p>
             </div>
         </div>
 
         <!-- Footer -->
         <footer class="game-footer">
-            <p>Built with ❤️ by <strong>BamzzStudio</strong> on <strong>Bless Network</strong></p>
+            <p>Built with ❤️ by <strong>AdekunleBamz</strong> for <strong>Monad Mission 7</strong></p>
         </footer>
     </div>
 
-    <script src="script.js"></script>
+            <script src="wallet.js?v=22"></script>
+            <script src="wallet-manager.js?v=22"></script>
+            <script src="leaderboard.js?v=22"></script>
+    <script src="payment.js?v=19"></script>
+            <script src="script.js?v=22"></script>
 </body>
 </html>
