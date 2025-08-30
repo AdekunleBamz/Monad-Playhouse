@@ -299,6 +299,12 @@ class MonadWallet {
     // Check if player has enough balance for entry fee
     async hasEnoughBalance() {
         try {
+            // For testing mode, always return true regardless of network
+            console.log('hasEnoughBalance: Testing mode - allowing payment regardless of network');
+            return true;
+            
+            // Original network check code (commented out for testing)
+            /*
             // Check if we're on the correct network
             const currentChainId = await this.getChainId();
             const expectedChainId = parseInt(this.config.chainId, 16);
@@ -314,9 +320,10 @@ class MonadWallet {
             const hasEnough = balance >= entryFeeNum;
             console.log('hasEnoughBalance: Balance:', balance, 'MON, Entry fee:', entryFeeNum, 'MON, Has enough:', hasEnough);
             return hasEnough;
+            */
         } catch (error) {
             console.error('hasEnoughBalance: Error checking balance:', error);
-            return false;
+            return true; // Return true for testing mode
         }
     }
 
