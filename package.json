@@ -1,27 +1,29 @@
 {
   "name": "monad-playhouse",
   "version": "1.0.0",
-  "description": "Monad Game Jam 2024 - Multi-game platform with blockchain leaderboards",
-  "main": "index.html",
+  "description": "Multi-Game Platform with Blockchain Leaderboards on Monad Testnet",
+  "main": "server/leaderboard-server-simple.js",
   "scripts": {
+    "start": "node server/leaderboard-server-simple.js",
     "dev": "python3 -m http.server 8080",
-    "start": "python3 -m http.server 8080",
-    "build": "echo 'Static files ready for deployment'",
-    "deploy": "echo 'Deploy to Vercel or other hosting platform'"
+    "build": "echo 'Static build completed'",
+    "vercel-build": "echo 'Vercel build completed'"
   },
   "keywords": [
     "monad",
     "blockchain",
     "gaming",
     "leaderboard",
-    "web3",
-    "game-jam"
+    "web3"
   ],
-  "author": "AdekunleBamz",
+  "author": "BamzzStudio",
   "license": "MIT",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }
