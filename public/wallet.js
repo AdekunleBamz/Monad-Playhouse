@@ -97,7 +97,7 @@ class MonadWallet {
             const currentChainId = await this.getChainId();
             const monadChainId = parseInt(this.config.chainId, 16);
             
-            console.log('Current chain ID:', currentChainId, 'Monad chain ID:', monadChainId);
+            console.log('Current chain ID:', currentChainId, 'Monad chain ID:', monadChainId, 'Config chainId:', this.config.chainId);
             
             if (currentChainId === monadChainId) {
                 console.log('Already connected to Monad Testnet');
@@ -126,6 +126,7 @@ class MonadWallet {
         try {
             // Try to switch to the network
             const chainIdHex = this.config.chainId;
+            console.log('Attempting to switch to chainId:', chainIdHex);
             await this.wallet.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: chainIdHex }]
@@ -133,6 +134,7 @@ class MonadWallet {
             
             console.log('Successfully switched to Monad Testnet');
         } catch (switchError) {
+            console.error('Switch error:', switchError);
             // If the network doesn't exist, try to add it
             if (switchError.code === 4902) {
                 console.log('Monad Testnet not found in wallet, attempting to add...');
@@ -259,7 +261,7 @@ class MonadWallet {
             }
             
             const balanceInEther = this.weiToEther(balance);
-            console.log('Balance fetched:', balanceInEther, 'MON');
+            console.log('Balance fetched:', balanceInEther, 'MON', 'Raw balance:', balance);
             return balanceInEther;
         } catch (error) {
             console.error('Failed to get balance:', error);
@@ -294,8 +296,9 @@ class MonadWallet {
     async hasEnoughBalance() {
         try {
             const balance = await this.getBalance();
-            const hasEnough = balance >= this.entryFee;
-            console.log('hasEnoughBalance: Balance:', balance, 'MON, Entry fee:', this.entryFee, 'MON, Has enough:', hasEnough);
+            const entryFeeNum = parseFloat(this.entryFee);
+            const hasEnough = balance >= entryFeeNum;
+            console.log('hasEnoughBalance: Balance:', balance, 'MON, Entry fee:', entryFeeNum, 'MON, Has enough:', hasEnough);
             return hasEnough;
         } catch (error) {
             console.error('hasEnoughBalance: Error checking balance:', error);
@@ -315,6 +318,9 @@ class MonadWallet {
                 throw new Error('Wallet not connected');
             }
 
+            // Ensure we're on the correct network first
+            await this.ensureMonadNetwork();
+            
             console.log('payEntryFee: Checking if has enough balance...');
             const hasBalance = await this.hasEnoughBalance();
             console.log('payEntryFee: Has enough balance:', hasBalance);
