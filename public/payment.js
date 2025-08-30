@@ -615,7 +615,7 @@ class PaymentGateway {
                 window.monadPlayhouse.startGameWithPayment(this.currentGameType, this.playerName);
                 console.log('Game started successfully!');
             } catch (error) {
-                console.error('Error starting game with blessedPlayhouse:', error);
+                console.error('Error starting game with monadPlayhouse:', error);
                 this.showError(`Failed to start game: ${error.message}`);
             }
         } else {
