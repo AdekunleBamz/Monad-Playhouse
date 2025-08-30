@@ -7,7 +7,10 @@ class LeaderboardManager {
         this.leaderboardData = [];
         this.isVisible = false;
         this.refreshInterval = null;
-        this.apiBaseUrl = 'http://localhost:3001/api';
+        // Use production backend URL when not on localhost
+        this.apiBaseUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3001/api' 
+            : 'https://monad-playhouse-backend.onrender.com/api';
     }
 
     // Initialize leaderboard system
@@ -154,10 +157,21 @@ class LeaderboardManager {
     // Submit score to API
     async submitScore(gameType, score, playerName, gameDuration) {
         console.log('submitScore called with:', { gameType, score, playerName, gameDuration });
+        console.log('API Base URL:', this.apiBaseUrl);
         
         try {
             // Get player address from wallet
             const playerAddress = window.monadWallet?.account || 'unknown';
+            
+            const scoreData = {
+                gameType,
+                score,
+                playerName,
+                gameDuration,
+                playerAddress
+            };
+            
+            console.log('Submitting score data:', scoreData);
             
             // Submit to API
             const response = await fetch(`${this.apiBaseUrl}/submit-score`, {
@@ -165,16 +179,18 @@ class LeaderboardManager {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    gameType,
-                    score,
-                    playerName,
-                    gameDuration,
-                    playerAddress
-                })
+                body: JSON.stringify(scoreData)
             });
             
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const result = await response.json();
+            console.log('API response:', result);
             
             if (result.success) {
                 console.log('Score submitted successfully:', result);
@@ -192,7 +208,12 @@ class LeaderboardManager {
             
         } catch (error) {
             console.error('Score submission error:', error);
-            this.showNotification('Error', 'Failed to submit score. Please try again.');
+            console.error('Error details:', {
+                message: error.message,
+                stack: error.stack,
+                apiUrl: this.apiBaseUrl
+            });
+            this.showNotification('Error', `Failed to submit score: ${error.message}`);
             return false;
         }
     }
