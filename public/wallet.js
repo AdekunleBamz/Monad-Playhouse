@@ -344,156 +344,33 @@ class MonadWallet {
                 throw new Error('Insufficient balance for entry fee');
             }
 
-            // For now, simulate successful payment without blockchain transaction
-            // This allows testing while we debug the smart contract interaction
+            // Simulate successful payment for testing
             console.log('Simulating successful payment for testing...');
+            
+            // Generate a fake transaction hash
+            const fakeHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
+            const fakeNonce = Math.floor(Date.now() + Math.random() * 1000000);
+            
+            console.log('Payment simulation successful:', {
+                transactionHash: fakeHash,
+                nonce: fakeNonce,
+                gameType: gameType,
+                playerName: playerName
+            });
+            
             return {
                 success: true,
-                transactionHash: '0x' + Math.random().toString(16).substring(2, 66),
-                nonce: Math.floor(Date.now() + Math.random() * 1000000),
+                transactionHash: fakeHash,
+                nonce: fakeNonce,
                 simulated: true
             };
-            
-            // Check if user has enough balance for gas costs as well
-            try {
-                const gasPrice = await this.wallet.request({ method: 'eth_gasPrice' });
-                const estimatedGas = '0x186A0'; // 100000 gas as estimate
-                const gasCostWei = parseInt(gasPrice, 16) * parseInt(estimatedGas, 16);
-                const entryFeeWei = parseInt(this.etherToWei(this.entryFee.toString()).slice(2), 16);
-                const totalCostWei = gasCostWei + entryFeeWei;
-                
-                const balanceWei = await this.getBalanceInWei();
-                if (balanceWei < totalCostWei) {
-                    throw new Error(`Insufficient balance. Need ${this.weiToEther(totalCostWei)} MON (including gas costs)`);
-                }
-                
-                console.log('payEntryFee: Sufficient balance for entry fee and gas costs');
-            } catch (error) {
-                console.warn('Balance check for gas costs failed:', error);
-                // Continue with the transaction
-            }
-
-            // Generate unique nonce
-            const nonce = Math.floor(Date.now() + Math.random() * 1000000);
-            
-            // Ensure nonce is positive
-            if (nonce <= 0) {
-                throw new Error('Invalid nonce generated');
-            }
-            
-            // Encode function call for startGame
-            const functionSignature = 'startGame(uint256,string,uint256)';
-            const encodedData = await this.encodeStartGame(gameType, playerName, nonce);
-
-            // Validate contract address
-            if (!this.contractAddress || !/^0x[a-fA-F0-9]{40}$/.test(this.contractAddress)) {
-                throw new Error('Invalid contract address');
-            }
-            
-            // Check if we're on the correct network
-            try {
-                const chainId = await this.wallet.request({ method: 'eth_chainId' });
-                const expectedChainId = '0x279f'; // 10143 in hex (Monad Testnet)
-                const currentChainIdDecimal = parseInt(chainId, 16);
-                const expectedChainIdDecimal = parseInt(expectedChainId, 16);
-                
-                console.log('Current chain ID:', chainId, `(${currentChainIdDecimal}) Expected:`, expectedChainId, `(${expectedChainIdDecimal})`);
-                
-                if (currentChainIdDecimal !== expectedChainIdDecimal) {
-                    console.warn(`Wrong network. Expected Monad Testnet (Chain ID: ${expectedChainIdDecimal}), got Chain ID: ${currentChainIdDecimal}`);
-                    // Don't throw error, just warn and continue
-                } else {
-                    console.log('Network validation passed');
-                }
-            } catch (error) {
-                console.warn('Network validation check failed:', error);
-                // Continue with the transaction anyway
-            }
-            
-            // Prepare transaction parameters
-            const txParams = {
-                from: this.account,
-                to: this.contractAddress,
-                value: this.etherToWei(this.entryFee.toString()),
-                data: encodedData
-            };
-            
-            // Get current gas price from network
-            try {
-                const gasPrice = await this.wallet.request({
-                    method: 'eth_gasPrice'
-                });
-                txParams.gasPrice = gasPrice;
-                console.log('Current gas price:', gasPrice);
-            } catch (error) {
-                console.warn('Gas price fetch failed, using default:', error);
-                txParams.gasPrice = '0x59682F00'; // 1.5 gwei as fallback
-            }
-            
-            // Estimate gas dynamically
-            try {
-                const gasEstimate = await this.wallet.request({
-                    method: 'eth_estimateGas',
-                    params: [txParams]
-                });
-                txParams.gas = gasEstimate;
-                console.log('Estimated gas:', gasEstimate);
-            } catch (error) {
-                console.warn('Gas estimation failed, using default:', error);
-                txParams.gas = '0x186A0'; // 100000 gas as fallback
-            }
-            
-            console.log('Transaction parameters:', txParams);
-            console.log('Entry fee in wei:', txParams.value);
-
-            // Send transaction to smart contract
-            console.log('Sending transaction with params:', txParams);
-            
-            try {
-                const transactionHash = await this.wallet.request({
-                    method: 'eth_sendTransaction',
-                    params: [txParams]
-                });
-                
-                console.log('Transaction sent successfully, hash:', transactionHash);
-
-                // Wait for transaction confirmation
-                const receipt = await this.waitForTransaction(transactionHash);
-                
-                if (receipt && receipt.status === '0x1') {
-                    return {
-                        success: true,
-                        transactionHash: transactionHash,
-                        nonce: nonce
-                    };
-                } else {
-                    throw new Error('Transaction failed on chain');
-                }
-            } catch (txError) {
-                console.error('Transaction sending failed:', txError);
-                throw txError;
-            }
 
         } catch (error) {
             console.error('Payment failed:', error);
             
-            // Handle specific MetaMask RPC errors
-            let errorMessage = 'Payment failed. Please try again.';
-            
-            if (error.code === -32603) {
-                errorMessage = 'Transaction failed on the network. This could be due to insufficient gas, invalid parameters, or network issues. Please check your wallet and try again.';
-            } else if (error.code === -32000) {
-                errorMessage = 'Insufficient funds for gas. Please ensure you have enough MON for both the entry fee and gas costs.';
-            } else if (error.code === -32001) {
-                errorMessage = 'Transaction rejected by user.';
-            } else if (error.message && error.message.includes('insufficient funds')) {
-                errorMessage = 'Insufficient balance for entry fee and gas costs.';
-            }
-            
-            this.showWalletError(errorMessage);
             return {
                 success: false,
-                error: error.message,
+                error: error.message || 'Payment failed. Please try again.',
                 code: error.code
             };
         }
