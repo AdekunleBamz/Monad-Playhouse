@@ -559,7 +559,13 @@ class PaymentGateway {
                     window.walletManager.trackGameDeposit(this.currentGameType, this.playerName);
                 }
                 
-                this.showSuccess();
+                // Show success message with simulation notice if applicable
+                if (result.simulated) {
+                    this.showSuccess('Payment simulated successfully! (Testing mode)');
+                } else {
+                    this.showSuccess();
+                }
+                
                 // Start the game after successful payment
                 setTimeout(() => {
                     this.hide();
@@ -578,11 +584,11 @@ class PaymentGateway {
     }
 
     // Show success message
-    showSuccess() {
+    showSuccess(message = 'Payment Successful!') {
         const content = this.paymentModal.querySelector('.payment-info');
         content.innerHTML = `
             <div class="success">
-                <h3>✅ Payment Successful!</h3>
+                <h3>✅ ${message}</h3>
                 <p>Starting game in 2 seconds...</p>
             </div>
         `;
