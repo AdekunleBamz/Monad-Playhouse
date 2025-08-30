@@ -84,7 +84,7 @@ curl http://localhost:3001/api/health
 5. Select your repository
 6. Add environment variable:
    - Key: `MONGODB_URI`
-   - Value: `mongodb+srv://username:password@cluster.mongodb.net/blessed-playhouse?retryWrites=true&w=majority`
+   - Value: `mongodb+srv://username:password@cluster.mongodb.net/monad-playhouse?retryWrites=true&w=majority`
 
 ### 2. Update Frontend (One Line Change)
 
@@ -120,7 +120,7 @@ this.apiBaseUrl = 'https://your-railway-app.railway.app/api';
 
 ### Required for MongoDB
 ```
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/blessed-playhouse?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/monad-playhouse?retryWrites=true&w=majority
 PORT=3001
 ```
 

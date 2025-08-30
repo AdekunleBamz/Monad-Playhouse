@@ -109,4 +109,4 @@ temp/
 *.pfx
 *secret*
 *private*
-bless-deploy.key
+# Removed bless-deploy.key reference

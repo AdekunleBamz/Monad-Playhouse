@@ -48,7 +48,7 @@ const checks = [
                    content.includes('initCryptoPuzzleGame') &&
                    content.includes('initTokenCollectorGame') &&
                    content.includes('initBlockchainTetrisGame') &&
-                   content.includes('BlessedPlayhouse');
+                   content.includes('MonadPlayhouse');
         },
         description: 'Game implementations fix'
     },

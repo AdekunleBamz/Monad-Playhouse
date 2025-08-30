@@ -75,12 +75,12 @@
             const testDiv = document.getElementById('game-test');
             try {
                 // Test if game system can be created
-                if (typeof BlessedPlayhouse !== 'undefined') {
+                if (typeof MonadPlayhouse !== 'undefined') {
                     testDiv.className = 'status success';
-                    testDiv.textContent = '✅ Game system: OK - BlessedPlayhouse class available';
+                    testDiv.textContent = '✅ Game system: OK - MonadPlayhouse class available';
                 } else {
                     testDiv.className = 'status error';
-                    testDiv.textContent = '❌ Game system: FAILED - BlessedPlayhouse class not found';
+                    testDiv.textContent = '❌ Game system: FAILED - MonadPlayhouse class not found';
                 }
             } catch (error) {
                 testDiv.className = 'status error';

@@ -2,12 +2,12 @@
 pragma solidity ^0.8.19;
 
 /**
- * @title Bakhryaan Blessed Playhouse Leaderboard
+ * @title Monad Playhouse Leaderboard
  * @dev Smart contract for managing game leaderboards and entry fees on Monad Chain
  * @author BamzzStudio
  * @notice This contract handles 0.1 MON entry fees and distributes rewards to top players
  */
-contract BlessedPlayhouseLeaderboard {
+contract MonadPlayhouseLeaderboard {
     
     // Events
     event GameStarted(address indexed player, uint256 gameType, uint256 entryFee);

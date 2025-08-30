@@ -1,7 +1,7 @@
-// Bakhryaan Blessed Playhouse - Enhanced Arcade Collection
+// Monad Playhouse - Mission 7 Game Jam Entry
 // Modern JavaScript with ES6+ features, sound effects, and 6 games
 
-class BlessedPlayhouse {
+class MonadPlayhouse {
     constructor() {
         this.currentGame = null;
         this.gameState = 'menu';
@@ -1435,7 +1435,7 @@ class BlessedPlayhouse {
     // Spelling Bee Game - Fill in the Gaps
     initSpellingGame(ctx, canvas) {
         const words = [
-            'blessed', 'playhouse', 'arcade', 'gaming', 'fun', 'awesome', 'neon', 'glow',
+            'monad', 'playhouse', 'arcade', 'gaming', 'fun', 'awesome', 'neon', 'glow',
             'adventure', 'challenge', 'skill', 'speed', 'memory', 'logic', 'puzzle', 'race',
             'snake', 'bird', 'tetris', 'math', 'color', 'match', 'quick', 'fast'
         ];
@@ -2195,7 +2195,7 @@ class BlessedPlayhouse {
     // Load scores from localStorage
     loadScores() {
         try {
-            const savedScores = localStorage.getItem('blessedPlayhouseScores');
+            const savedScores = localStorage.getItem('monadPlayhouseScores');
             if (savedScores) {
                 this.scores = { ...this.scores, ...JSON.parse(savedScores) };
                 console.log('Scores loaded from localStorage:', this.scores);
@@ -2208,7 +2208,7 @@ class BlessedPlayhouse {
     // Save scores to localStorage
     saveScores() {
         try {
-        localStorage.setItem('blessedPlayhouseScores', JSON.stringify(this.scores));
+                    localStorage.setItem('monadPlayhouseScores', JSON.stringify(this.scores));
             console.log('Scores saved to localStorage:', this.scores);
         } catch (error) {
             console.error('Failed to save scores:', error);
@@ -2748,5 +2748,5 @@ class BlessedPlayhouse {
 
 // Initialize the game when the page loads
 document.addEventListener('DOMContentLoaded', () => {
-    window.blessedPlayhouse = new BlessedPlayhouse();
+    window.monadPlayhouse = new MonadPlayhouse();
 });

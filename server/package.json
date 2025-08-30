@@ -1,7 +1,7 @@
 {
-  "name": "blessed-playhouse-leaderboard",
+  "name": "monad-playhouse-leaderboard",
   "version": "1.0.0",
-  "description": "Online leaderboard server for Blessed Playhouse games",
+  "description": "Online leaderboard server for Monad Playhouse games",
   "main": "leaderboard-server.js",
   "scripts": {
     "start": "node leaderboard-server.js",

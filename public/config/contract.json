@@ -1,0 +1,60 @@
+
+{
+  "contractAddress": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+  "network": {
+    "name": "Monad Testnet",
+    "chainId": "10143",
+    "rpcUrl": "https://testnet-rpc.monad.xyz",
+    "blockExplorer": "https://testnet.monadexplorer.com"
+  },
+  "entryFee": "0.1",
+  "gameTypes": {
+    "snake": 0,
+    "memory": 1,
+    "math": 2,
+    "color": 3,
+    "tetris": 4,
+    "flappy": 5,
+    "spelling": 6,
+    "carRace": 7,
+    "monadRunner": 8,
+    "cryptoPuzzle": 9,
+    "tokenCollector": 10,
+    "blockchainTetris": 11
+  },
+  "rewards": {
+    "topPlayerPercentage": 50,
+    "platformFeePercentage": 10,
+    "maxLeaderboardSize": 100
+  },
+  "validation": {
+    "maxPossibleScores": {
+      "snake": 10000,
+      "memory": 10000,
+      "math": 10000,
+      "color": 10000,
+      "tetris": 10000,
+      "flappy": 10000,
+      "spelling": 10000,
+      "carRace": 10000,
+      "monadRunner": 10000,
+      "cryptoPuzzle": 10000,
+      "tokenCollector": 10000,
+      "blockchainTetris": 10000
+    },
+    "minGameDuration": {
+      "snake": 10000,
+      "memory": 5000,
+      "math": 3000,
+      "color": 5000,
+      "tetris": 10000,
+      "flappy": 5000,
+      "spelling": 10000,
+      "carRace": 5000,
+      "monadRunner": 8000,
+      "cryptoPuzzle": 6000,
+      "tokenCollector": 7000,
+      "blockchainTetris": 10000
+    }
+  }
+}

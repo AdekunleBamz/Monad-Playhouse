@@ -1,5 +1,5 @@
 {
-  "name": "monad-playhouse",
+  "name": "monad-playhouse-mission7",
   "version": "1.0.0",
   "description": "Multi-Game Platform with Blockchain Leaderboards on Monad Testnet",
   "main": "server/leaderboard-server-simple.js",

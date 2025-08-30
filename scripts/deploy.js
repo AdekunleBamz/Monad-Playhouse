@@ -1,4 +1,4 @@
-// Deployment script for Bakhryaan Blessed Playhouse Leaderboard Contract
+// Deployment script for Monad Playhouse Leaderboard Contract
 // This script deploys the smart contract to Monad network
 
 const fs = require('fs');
@@ -10,7 +10,7 @@ const DEPLOYMENT_CONFIG = {
     chainId: 1,
     gasPrice: '1000000000', // 1 gwei
     gasLimit: '5000000',
-    contractName: 'BlessedPlayhouseLeaderboard',
+    contractName: 'MonadPlayhouseLeaderboard',
     constructorArgs: []
 };
 
