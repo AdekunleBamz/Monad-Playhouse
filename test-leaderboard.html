@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard Test - Monad Playhouse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        .test-section {
+            background: #16213e;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border: 1px solid #4ecdc4;
+        }
+        .status {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .success { background: #4CAF50; }
+        .error { background: #f44336; }
+        .warning { background: #ff9800; }
+        .info { background: #2196F3; }
+        .test-btn {
+            background: #4ecdc4;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏆 Leaderboard Test</h1>
+    
+    <div class="test-section">
+        <h2>System Check</h2>
+        <div id="system-check" class="status info">Checking systems...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Leaderboard Button</h2>
+        <div id="button-check" class="status info">Checking leaderboard button...</div>
+        <button class="test-btn" onclick="testLeaderboardButton()">Test Button</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Leaderboard Modal</h2>
+        <div id="modal-check" class="status info">Checking leaderboard modal...</div>
+        <button class="test-btn" onclick="testLeaderboardModal()">Test Modal</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>Data Loading</h2>
+        <div id="data-check" class="status info">Checking data loading...</div>
+        <button class="test-btn" onclick="testDataLoading()">Test Data</button>
+    </div>
+
+    <script>
+        // Test script to verify leaderboard functionality
+        function testSystemCheck() {
+            const checkDiv = document.getElementById('system-check');
+            try {
+                const systems = {
+                    monadWallet: typeof MonadWallet !== 'undefined',
+                    walletManager: typeof WalletManager !== 'undefined',
+                    leaderboardManager: typeof LeaderboardManager !== 'undefined',
+                    paymentGateway: typeof PaymentGateway !== 'undefined'
+                };
+                
+                const allWorking = Object.values(systems).every(Boolean);
+                
+                if (allWorking) {
+                    checkDiv.className = 'status success';
+                    checkDiv.textContent = '✅ All systems available';
+                } else {
+                    checkDiv.className = 'status error';
+                    checkDiv.textContent = '❌ Some systems missing: ' + Object.keys(systems).filter(k => !systems[k]).join(', ');
+                }
+            } catch (error) {
+                checkDiv.className = 'status error';
+                checkDiv.textContent = '❌ System check failed: ' + error.message;
+            }
+        }
+
+        function testLeaderboardButton() {
+            const checkDiv = document.getElementById('button-check');
+            try {
+                const button = document.getElementById('showLeaderboard');
+                if (button) {
+                    checkDiv.className = 'status success';
+                    checkDiv.textContent = '✅ Leaderboard button found';
+                    button.click();
+                } else {
+                    checkDiv.className = 'status error';
+                    checkDiv.textContent = '❌ Leaderboard button not found';
+                }
+            } catch (error) {
+                checkDiv.className = 'status error';
+                checkDiv.textContent = '❌ Button test failed: ' + error.message;
+            }
+        }
+
+        function testLeaderboardModal() {
+            const checkDiv = document.getElementById('modal-check');
+            try {
+                const modal = document.getElementById('leaderboardModal');
+                if (modal) {
+                    checkDiv.className = 'status success';
+                    checkDiv.textContent = '✅ Leaderboard modal found';
+                    modal.style.display = 'block';
+                    setTimeout(() => {
+                        modal.style.display = 'none';
+                    }, 3000);
+                } else {
+                    checkDiv.className = 'status error';
+                    checkDiv.textContent = '❌ Leaderboard modal not found';
+                }
+            } catch (error) {
+                checkDiv.className = 'status error';
+                checkDiv.textContent = '❌ Modal test failed: ' + error.message;
+            }
+        }
+
+        function testDataLoading() {
+            const checkDiv = document.getElementById('data-check');
+            try {
+                if (window.leaderboardManager) {
+                    checkDiv.className = 'status info';
+                    checkDiv.textContent = '🔄 Testing data loading...';
+                    
+                    window.leaderboardManager.loadLeaderboard(1).then(() => {
+                        checkDiv.className = 'status success';
+                        checkDiv.textContent = '✅ Data loading successful';
+                    }).catch(error => {
+                        checkDiv.className = 'status warning';
+                        checkDiv.textContent = '⚠️ Data loading failed (expected without wallet): ' + error.message;
+                    });
+                } else {
+                    checkDiv.className = 'status error';
+                    checkDiv.textContent = '❌ Leaderboard manager not available';
+                }
+            } catch (error) {
+                checkDiv.className = 'status error';
+                checkDiv.textContent = '❌ Data test failed: ' + error.message;
+            }
+        }
+
+        // Run tests after page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testSystemCheck();
+                testLeaderboardButton();
+                testLeaderboardModal();
+                testDataLoading();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

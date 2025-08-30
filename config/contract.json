@@ -1,10 +1,10 @@
 {
   "contractAddress": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-  "networkId": "0x1",
-  "chainId": "0x1",
-  "chainName": "Monad",
-  "rpcUrl": "https://rpc.ankr.com/monad_testnet",
-  "explorerUrl": "https://explorer.monad.xyz",
+  "networkId": "0x279f",
+  "chainId": "0x279f",
+  "chainName": "Monad Testnet",
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "explorerUrl": "https://testnet.monadexplorer.com",
   "entryFee": "0.1",
   "currency": "MON",
   "decimals": 18,
@@ -16,7 +16,11 @@
     "5": "Tetris",
     "6": "Flappy",
     "7": "Spelling",
-    "8": "Car Race"
+    "8": "Car Race",
+    "9": "Monad Runner",
+    "10": "Crypto Puzzle",
+    "11": "Token Collector",
+    "12": "Blockchain Tetris"
   },
   "rewards": {
     "firstPlace": 50,
@@ -34,7 +38,11 @@
       "5": 5000,
       "6": 1000,
       "7": 100,
-      "8": 1000
+      "8": 1000,
+      "9": 5000,
+      "10": 1000,
+      "11": 2000,
+      "12": 3000
     },
     "minDurations": {
       "1": 10,
@@ -44,7 +52,11 @@
       "5": 30,
       "6": 5,
       "7": 60,
-      "8": 15
+      "8": 15,
+      "9": 20,
+      "10": 45,
+      "11": 30,
+      "12": 25
     }
   }
 }

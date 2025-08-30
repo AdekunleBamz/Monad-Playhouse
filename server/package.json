@@ -1,0 +1,28 @@
+{
+  "name": "blessed-playhouse-leaderboard",
+  "version": "1.0.0",
+  "description": "Online leaderboard server for Blessed Playhouse games",
+  "main": "leaderboard-server.js",
+  "scripts": {
+    "start": "node leaderboard-server.js",
+    "dev": "nodemon leaderboard-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "leaderboard",
+    "gaming",
+    "monad",
+    "blockchain"
+  ],
+  "author": "Bakhryaan",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.18.2",
+    "mongodb": "^6.19.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

@@ -173,7 +173,7 @@ class BlessedPlayhouse {
             await window.walletManager.init();
             console.log('WalletManager initialized:', !!window.walletManager);
             
-            // Initialize leaderboard
+            // Initialize leaderboard with proper timing
             console.log('Initializing LeaderboardManager...');
             window.leaderboardManager = new LeaderboardManager();
             await window.leaderboardManager.init();
@@ -201,11 +201,57 @@ class BlessedPlayhouse {
                 throw new Error('Payment gateway failed to initialize');
             }
             
+            // Ensure leaderboard button is visible
+            setTimeout(() => {
+                const leaderboardBtn = document.getElementById('showLeaderboard');
+                if (!leaderboardBtn) {
+                    console.warn('Leaderboard button not found, creating fallback...');
+                    this.createLeaderboardButtonFallback();
+                } else {
+                    console.log('Leaderboard button found and ready');
+                }
+            }, 2000);
+            
         } catch (error) {
             console.error('Failed to initialize blockchain systems:', error);
             // Show user-friendly error message
             this.showWalletRequiredMessage();
         }
+    }
+
+    // Create leaderboard button fallback
+    createLeaderboardButtonFallback() {
+        const leaderboardBtn = document.createElement('button');
+        leaderboardBtn.id = 'showLeaderboard';
+        leaderboardBtn.className = 'control-btn';
+        leaderboardBtn.innerHTML = '🏆';
+        leaderboardBtn.title = 'View Leaderboard';
+        leaderboardBtn.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: linear-gradient(45deg, #4ecdc4, #6dd5ed);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        `;
+        
+        leaderboardBtn.addEventListener('click', () => {
+            if (window.leaderboardManager) {
+                window.leaderboardManager.show();
+            } else {
+                console.error('Leaderboard manager not available');
+            }
+        });
+        
+        document.body.appendChild(leaderboardBtn);
+        console.log('Leaderboard button fallback created');
     }
     
     // Show message when wallet is required
@@ -268,7 +314,7 @@ class BlessedPlayhouse {
         modal.className = 'payment-options-modal';
         modal.innerHTML = `
             <div class="payment-options-content">
-                <h3>Choose Your Game Mode</h3>
+                <h3>🎮 Premium Game Access</h3>
                 <div class="options">
                     <div class="option premium">
                         <h4>💎 Premium Mode</h4>
@@ -279,17 +325,7 @@ class BlessedPlayhouse {
                             <li>🔗 Get on-chain records on Monad</li>
                         </ul>
                         <button class="premium-btn" data-game="${gameType}">Play Premium</button>
-                        </div>
-                    <div class="option free">
-                        <h4>🆓 Free Play Mode</h4>
-                        <p>Play without payment</p>
-                        <ul>
-                            <li>✅ Play all games for free</li>
-                            <li>📊 Local score tracking</li>
-                            <li>🎮 Practice and have fun</li>
-                        </ul>
-
-                        </div>
+                    </div>
                 </div>
                 <button class="close-btn">✕</button>
             </div>
@@ -316,7 +352,7 @@ class BlessedPlayhouse {
                 padding: 30px;
                 border: 2px solid #4ecdc4;
                 box-shadow: 0 10px 30px rgba(78, 205, 196, 0.3);
-                max-width: 600px;
+                max-width: 500px;
                 width: 90%;
                 position: relative;
             }
@@ -328,7 +364,7 @@ class BlessedPlayhouse {
             }
             .options {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr;
                 gap: 20px;
                 margin-bottom: 20px;
             }
@@ -363,7 +399,7 @@ class BlessedPlayhouse {
                 margin-bottom: 5px;
                 font-size: 14px;
             }
-            .premium-btn, .free-btn {
+            .premium-btn {
                 background: linear-gradient(45deg, #4ecdc4, #6dd5ed);
                 color: white;
                 border: none;
@@ -375,7 +411,7 @@ class BlessedPlayhouse {
                 transition: all 0.3s ease;
                 width: 100%;
             }
-            .premium-btn:hover, .free-btn:hover {
+            .premium-btn:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
             }
@@ -392,11 +428,7 @@ class BlessedPlayhouse {
                 cursor: pointer;
                 font-size: 16px;
             }
-            @media (max-width: 768px) {
-                .options {
-                    grid-template-columns: 1fr;
-                }
-            }
+
         `;
         document.head.appendChild(style);
 
@@ -1863,6 +1895,9 @@ class BlessedPlayhouse {
                 Your score: <span id="overlayScore">${this.scores[gameType]}</span>
             </div>
             ${this.paymentRequired ? '<div style="margin-top: 10px; color: #00ff88;">Score submitted to leaderboard!</div>' : ''}
+            <div style="margin-top: 15px; color: #4ecdc4; font-size: 14px;">
+                💡 To play again, you'll need to pay another 0.1 MON entry fee
+            </div>
         `;
         document.getElementById('overlayScore').textContent = this.scores[gameType];
         document.getElementById('gameOverlay').style.display = 'flex';
@@ -1875,8 +1910,9 @@ class BlessedPlayhouse {
     async submitScoreToLeaderboard(gameType) {
         try {
             const gameTypeMap = {
-                'snake': 0, 'memory': 1, 'math': 2, 'color': 3,
-                'tetris': 4, 'flappy': 5, 'spelling': 6, 'carRace': 7
+                'snake': 1, 'memory': 2, 'math': 3, 'color': 4,
+                'tetris': 5, 'flappy': 6, 'spelling': 7, 'carRace': 8,
+                'monadRunner': 9, 'cryptoPuzzle': 10, 'tokenCollector': 11, 'blockchainTetris': 12
             };
             
             const blockchainGameType = gameTypeMap[gameType];
@@ -1898,7 +1934,8 @@ class BlessedPlayhouse {
 
     restartGame() {
         document.getElementById('gameOverlay').style.display = 'none';
-        this.startGame(this.currentGame);
+        // Instead of restarting the same game, show payment options for a new game
+        this.showPaymentOptions(this.currentGame);
     }
 
     // Show the main game menu
@@ -2685,6 +2722,19 @@ class BlessedPlayhouse {
                 tetris.score += 100;
                 this.sounds.success();
             }
+        }
+    }
+
+    rotateTetrisPiece(tetris) {
+        const rotated = tetris.currentPiece[0].map((_, i) => 
+            tetris.currentPiece.map(row => row[i]).reverse()
+        );
+        
+        const originalPiece = tetris.currentPiece;
+        tetris.currentPiece = rotated;
+        
+        if (!this.isValidTetrisMove(tetris.currentPiece, tetris.x, tetris.y, tetris.board)) {
+            tetris.currentPiece = originalPiece;
         }
     }
 
