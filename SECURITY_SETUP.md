@@ -27,7 +27,7 @@
 
 ```bash
 # MongoDB Atlas Connection
-MONGODB_URI=mongodb+srv://adebamzzw1_db_user:GSZXxpbNIdVjZSQc@cluster0.fbquz94.mongodb.net/blessed-playhouse?retryWrites=true&w=majority&appName=Cluster0
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/blessed-playhouse?retryWrites=true&w=majority
 
 # Server Configuration
 PORT=3001
