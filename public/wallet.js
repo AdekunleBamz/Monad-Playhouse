@@ -127,12 +127,14 @@ class MonadWallet {
             // Try to switch to the network
             const chainIdHex = this.config.chainId;
             console.log('Attempting to switch to chainId:', chainIdHex);
+            
             await this.wallet.request({
                 method: 'wallet_switchEthereumChain',
                 params: [{ chainId: chainIdHex }]
             });
             
             console.log('Successfully switched to Monad Testnet');
+            return true;
         } catch (switchError) {
             console.error('Switch error:', switchError);
             // If the network doesn't exist, try to add it
@@ -140,17 +142,18 @@ class MonadWallet {
                 console.log('Monad Testnet not found in wallet, attempting to add...');
                 try {
                     await this.addMonadNetwork();
+                    console.log('Successfully added and switched to Monad Testnet');
+                    return true;
                 } catch (addError) {
-                    console.warn('Failed to add Monad Testnet:', addError);
-                    console.warn('Please add Monad Testnet manually to your wallet');
-                    // Don't throw error, just warn user
+                    console.error('Failed to add Monad Testnet:', addError);
+                    throw new Error('Please add Monad Testnet manually to your wallet. Network details: Chain ID: 10143, RPC: https://testnet-rpc.monad.xyz');
                 }
             } else if (switchError.code === 4001) {
                 console.warn('User rejected network switch request');
-                // Don't throw error, user made a choice
+                throw new Error('Network switch was rejected. Please switch to Monad Testnet manually to continue.');
             } else {
                 console.error('Failed to switch to Monad Testnet:', switchError);
-                // Don't throw error, just log it
+                throw new Error('Failed to switch to Monad Testnet. Please switch manually.');
             }
         }
     }
@@ -299,12 +302,6 @@ class MonadWallet {
     // Check if player has enough balance for entry fee
     async hasEnoughBalance() {
         try {
-            // For testing mode, always return true regardless of network
-            console.log('hasEnoughBalance: Testing mode - allowing payment regardless of network');
-            return true;
-            
-            // Original network check code (commented out for testing)
-            /*
             // Check if we're on the correct network
             const currentChainId = await this.getChainId();
             const expectedChainId = parseInt(this.config.chainId, 16);
@@ -320,10 +317,9 @@ class MonadWallet {
             const hasEnough = balance >= entryFeeNum;
             console.log('hasEnoughBalance: Balance:', balance, 'MON, Entry fee:', entryFeeNum, 'MON, Has enough:', hasEnough);
             return hasEnough;
-            */
         } catch (error) {
             console.error('hasEnoughBalance: Error checking balance:', error);
-            return true; // Return true for testing mode
+            return false;
         }
     }
 
@@ -339,7 +335,7 @@ class MonadWallet {
                 throw new Error('Wallet not connected');
             }
 
-            // Ensure we're on the correct network first
+            // Ensure we're on the correct network first with automatic switching
             await this.ensureMonadNetwork();
             
             console.log('payEntryFee: Checking if has enough balance...');
@@ -351,33 +347,95 @@ class MonadWallet {
                 throw new Error('Insufficient balance for entry fee');
             }
 
-            // Simulate successful payment for testing
-            console.log('Simulating successful payment for testing...');
+            // Generate unique nonce
+            const nonce = Math.floor(Date.now() + Math.random() * 1000000);
             
-            // Generate a fake transaction hash
-            const fakeHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random() * 16).toString(16)).join('');
-            const fakeNonce = Math.floor(Date.now() + Math.random() * 1000000);
+            // Encode function call for startGame
+            const encodedData = await this.encodeStartGame(gameType, playerName, nonce);
+
+            // Validate contract address
+            if (!this.contractAddress || !/^0x[a-fA-F0-9]{40}$/.test(this.contractAddress)) {
+                throw new Error('Invalid contract address');
+            }
             
-            console.log('Payment simulation successful:', {
-                transactionHash: fakeHash,
-                nonce: fakeNonce,
-                gameType: gameType,
-                playerName: playerName
+            // Prepare transaction parameters
+            const txParams = {
+                from: this.account,
+                to: this.contractAddress,
+                value: this.etherToWei(this.entryFee.toString()),
+                data: encodedData
+            };
+            
+            // Get current gas price from network
+            try {
+                const gasPrice = await this.wallet.request({
+                    method: 'eth_gasPrice'
+                });
+                txParams.gasPrice = gasPrice;
+                console.log('Current gas price:', gasPrice);
+            } catch (error) {
+                console.warn('Gas price fetch failed, using default:', error);
+                txParams.gasPrice = '0x59682F00'; // 1.5 gwei as fallback
+            }
+            
+            // Estimate gas dynamically
+            try {
+                const gasEstimate = await this.wallet.request({
+                    method: 'eth_estimateGas',
+                    params: [txParams]
+                });
+                txParams.gas = gasEstimate;
+                console.log('Estimated gas:', gasEstimate);
+            } catch (error) {
+                console.warn('Gas estimation failed, using default:', error);
+                txParams.gas = '0x186A0'; // 100000 gas as fallback
+            }
+            
+            console.log('Transaction parameters:', txParams);
+            console.log('Entry fee in wei:', txParams.value);
+
+            // Send transaction to smart contract - USER MUST APPROVE
+            console.log('Sending transaction - USER MUST APPROVE IN WALLET');
+            
+            const transactionHash = await this.wallet.request({
+                method: 'eth_sendTransaction',
+                params: [txParams]
             });
             
-            return {
-                success: true,
-                transactionHash: fakeHash,
-                nonce: fakeNonce,
-                simulated: true
-            };
+            console.log('Transaction sent successfully, hash:', transactionHash);
+
+            // Wait for transaction confirmation
+            const receipt = await this.waitForTransaction(transactionHash);
+            
+            if (receipt && receipt.status === '0x1') {
+                return {
+                    success: true,
+                    transactionHash: transactionHash,
+                    nonce: nonce
+                };
+            } else {
+                throw new Error('Transaction failed on chain');
+            }
 
         } catch (error) {
             console.error('Payment failed:', error);
             
+            // Handle specific MetaMask RPC errors
+            let errorMessage = 'Payment failed. Please try again.';
+            
+            if (error.code === -32603) {
+                errorMessage = 'Transaction failed on the network. This could be due to insufficient gas, invalid parameters, or network issues. Please check your wallet and try again.';
+            } else if (error.code === -32000) {
+                errorMessage = 'Insufficient funds for gas. Please ensure you have enough MON for both the entry fee and gas costs.';
+            } else if (error.code === -32001) {
+                errorMessage = 'Transaction rejected by user.';
+            } else if (error.message && error.message.includes('insufficient funds')) {
+                errorMessage = 'Insufficient balance for entry fee and gas costs.';
+            }
+            
             return {
                 success: false,
-                error: error.message || 'Payment failed. Please try again.',
+                error: errorMessage,
                 code: error.code
             };
         }

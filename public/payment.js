@@ -559,12 +559,8 @@ class PaymentGateway {
                     window.walletManager.trackGameDeposit(this.currentGameType, this.playerName);
                 }
                 
-                // Show success message with simulation notice if applicable
-                if (result.simulated) {
-                    this.showSuccess('Payment simulated successfully! (Testing mode)');
-                } else {
-                    this.showSuccess();
-                }
+                // Show success message
+                this.showSuccess('Payment successful! Transaction confirmed on blockchain.');
                 
                 // Start the game after successful payment
                 setTimeout(() => {
