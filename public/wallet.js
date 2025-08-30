@@ -251,6 +251,10 @@ class MonadWallet {
                 throw new Error('Wallet not connected');
             }
 
+            // Check current network first
+            const currentChainId = await this.getChainId();
+            console.log('Current network chainId:', currentChainId, 'Expected:', parseInt(this.config.chainId, 16));
+
             const balance = await this.wallet.request({
                 method: 'eth_getBalance',
                 params: [this.account, 'latest']
@@ -261,7 +265,7 @@ class MonadWallet {
             }
             
             const balanceInEther = this.weiToEther(balance);
-            console.log('Balance fetched:', balanceInEther, 'MON', 'Raw balance:', balance);
+            console.log('Balance fetched:', balanceInEther, 'MON', 'Raw balance:', balance, 'Account:', this.account);
             return balanceInEther;
         } catch (error) {
             console.error('Failed to get balance:', error);
@@ -295,6 +299,16 @@ class MonadWallet {
     // Check if player has enough balance for entry fee
     async hasEnoughBalance() {
         try {
+            // Check if we're on the correct network
+            const currentChainId = await this.getChainId();
+            const expectedChainId = parseInt(this.config.chainId, 16);
+            
+            if (currentChainId !== expectedChainId) {
+                console.warn('⚠️ Wrong network detected! Current:', currentChainId, 'Expected:', expectedChainId);
+                console.warn('Please switch to Monad Testnet to see your correct balance');
+                return false;
+            }
+            
             const balance = await this.getBalance();
             const entryFeeNum = parseFloat(this.entryFee);
             const hasEnough = balance >= entryFeeNum;
