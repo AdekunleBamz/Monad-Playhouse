@@ -17,6 +17,14 @@ class MGIDManager {
         try {
             console.log('Initializing MGID Manager...');
             
+            // Check if Privy is available
+            if (typeof Privy === 'undefined') {
+                console.warn('Privy SDK not loaded, waiting for it...');
+                // Wait a bit and try again
+                setTimeout(() => this.init(), 1000);
+                return;
+            }
+            
             // Initialize Privy
             this.privy = new Privy({
                 appId: 'clx8euall0037le0my79qpz42', // Your Privy App ID
@@ -39,6 +47,8 @@ class MGIDManager {
             
         } catch (error) {
             console.error('Failed to initialize MGID Manager:', error);
+            // Retry after a delay
+            setTimeout(() => this.init(), 2000);
         }
     }
 

@@ -18,12 +18,17 @@ class MonadWallet {
             await this.loadConfig();
             
             // Check if Ethereum wallet (MetaMask) is available
-            if (typeof window.ethereum !== 'undefined') {
+            console.log('Checking for Ethereum wallet...');
+            console.log('window.ethereum exists:', typeof window.ethereum !== 'undefined');
+            console.log('window.ethereum:', window.ethereum);
+            
+            if (typeof window.ethereum !== 'undefined' && window.ethereum) {
                 this.wallet = window.ethereum;
                 this.contractAddress = this.config.contractAddress;
                 this.entryFee = this.config.entryFee;
                 this.isDemoMode = false;
                 console.log('Ethereum wallet detected - ready for real blockchain interaction');
+                console.log('Wallet object:', this.wallet);
                 return true;
             } else {
                 console.warn('No Ethereum wallet found. Please install MetaMask or compatible wallet.');
@@ -36,7 +41,7 @@ class MonadWallet {
         } catch (error) {
             console.error('Wallet initialization failed:', error);
             this.isDemoMode = false; // No demo mode
-            return true; // Don't throw error, allow app to continue
+            return false; // Return false on error
         }
     }
     
