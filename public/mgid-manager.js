@@ -43,11 +43,14 @@ class MGIDManager {
                 return;
             }
             
-            // Initialize Privy
+            // Initialize Privy with proper MGID configuration
             this.privy = new Privy({
                 appId: 'clx8euall0037le0my79qpz42', // Your Privy App ID
                 config: {
-                    loginMethodsAndOrder: ['cross_app'],
+                    loginMethodsAndOrder: {
+                        primary: ['privy:clx8euall0037le0my79qpz42'], // Monad Games ID
+                        secondary: ['email', 'google']
+                    },
                     crossAppAccount: {
                         providerAppId: this.crossAppId
                     }
@@ -76,6 +79,8 @@ class MGIDManager {
         const mgidLoginBtn = document.getElementById('mgidLogin');
         if (mgidLoginBtn) {
             mgidLoginBtn.addEventListener('click', () => this.login());
+            // Update button text based on status
+            this.updateLoginButton();
         }
 
         // Listen for Privy events
@@ -92,6 +97,21 @@ class MGIDManager {
         }
     }
 
+    updateLoginButton() {
+        const mgidLoginBtn = document.getElementById('mgidLogin');
+        if (mgidLoginBtn) {
+            if (this.isAuthenticated) {
+                mgidLoginBtn.textContent = '🎯 MGID Connected';
+                mgidLoginBtn.title = 'Monad Games ID Connected';
+                mgidLoginBtn.style.background = 'linear-gradient(45deg, #00ff88, #4ecdc4)';
+            } else {
+                mgidLoginBtn.textContent = '🎯 MGID Login';
+                mgidLoginBtn.title = 'Sign in with Monad Games ID';
+                mgidLoginBtn.style.background = 'linear-gradient(45deg, #6f42c1, #8e44ad)';
+            }
+        }
+    }
+
     async login() {
         try {
             console.log('Starting MGID login...');
@@ -100,11 +120,32 @@ class MGIDManager {
                 throw new Error('Privy not initialized');
             }
 
-            await this.privy.login();
+            // Show loading state
+            this.showNotification('Connecting to Monad Games ID...', 'info');
+            
+            // Use cross-app account login for Monad Games ID
+            await this.privy.loginWithCrossAppAccount({
+                appId: 'clx8euall0037le0my79qpz42' // Monad Games ID provider app ID
+            });
+            
+            console.log('MGID login successful');
             
         } catch (error) {
             console.error('MGID login failed:', error);
-            this.showNotification('MGID login failed. Please try again.', 'error');
+            
+            // Provide specific error messages
+            let errorMessage = 'MGID login failed. ';
+            if (error.message.includes('authorize')) {
+                errorMessage += 'Please authorize access to your Monad Games ID account.';
+            } else if (error.message.includes('provider')) {
+                errorMessage += 'Monad Games ID is not available at the moment.';
+            } else if (error.message.includes('account')) {
+                errorMessage += 'You need a Monad Games ID account to continue.';
+            } else {
+                errorMessage += 'Please try again.';
+            }
+            
+            this.showNotification(errorMessage, 'error');
         }
     }
 
