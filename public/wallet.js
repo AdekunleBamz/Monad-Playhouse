@@ -31,7 +31,7 @@ class MonadWallet {
                 this.contractAddress = this.config.contractAddress;
                 this.entryFee = this.config.entryFee;
                 this.isDemoMode = false; // No demo mode
-                return true; // Don't throw error, allow app to continue
+                return false; // Return false to indicate no wallet
             }
         } catch (error) {
             console.error('Wallet initialization failed:', error);

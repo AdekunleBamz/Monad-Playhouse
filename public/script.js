@@ -292,13 +292,71 @@ class MonadPlayhouse {
         }
     }
 
+    showGameOverPopup(score, gameType) {
+        // Create game over popup
+        const popup = document.createElement('div');
+        popup.id = 'gameOverPopup';
+        popup.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        `;
+
+        const popupContent = document.createElement('div');
+        popupContent.style.cssText = `
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 3px solid #00ff88;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 50px rgba(0, 255, 136, 0.5);
+        `;
+
+        popupContent.innerHTML = `
+            <h2 style="color: #00ff88; font-size: 2.5rem; margin-bottom: 20px;">Game Over!</h2>
+            <p style="color: #fff; font-size: 1.5rem; margin-bottom: 10px;">Final Score: <span style="color: #ff6b9d; font-weight: bold;">${score}</span></p>
+            <p style="color: #ccc; font-size: 1rem; margin-bottom: 30px;">Game: ${gameType}</p>
+            <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                <button id="playAgainBtn" style="background: linear-gradient(45deg, #00ff88, #00d4ff); color: #000; padding: 15px 30px; border: none; border-radius: 25px; font-size: 16px; font-weight: bold; cursor: pointer;">Play Again</button>
+                <button id="mainMenuBtn" style="background: rgba(255, 107, 157, 0.2); border: 2px solid #ff6b9d; color: #ff6b9d; padding: 15px 30px; border-radius: 25px; font-size: 16px; cursor: pointer;">Main Menu</button>
+            </div>
+        `;
+
+        popup.appendChild(popupContent);
+        document.body.appendChild(popup);
+
+        // Add event listeners
+        document.getElementById('playAgainBtn').addEventListener('click', () => {
+            popup.remove();
+            this.startGame(gameType, false);
+        });
+
+        document.getElementById('mainMenuBtn').addEventListener('click', () => {
+            popup.remove();
+            this.endGame();
+        });
+    }
+
     async submitScore() {
         try {
             console.log('Submitting score:', this.currentScore);
 
+            // Get player name from localStorage or use default
+            const playerName = localStorage.getItem('monadPlayhouseUsername') || 'Anonymous';
+            const gameDuration = Math.floor((Date.now() - this.gameStartTime) / 1000);
+
             // Submit to local leaderboard
             if (this.leaderboardManager) {
-                await this.leaderboardManager.submitScore(this.currentGame.gameType, this.currentScore);
+                await this.leaderboardManager.submitScore(this.currentGame.gameType, this.currentScore, playerName, gameDuration);
             }
 
             // Submit to MGID if authenticated
@@ -410,6 +468,7 @@ class SnakeGame {
 
     stop() {
         this.isRunning = false;
+        window.monadPlayhouse.showGameOverPopup(this.score, this.gameType);
     }
 
     togglePause() {
@@ -447,7 +506,6 @@ class SnakeGame {
 
         if (this.checkCollision()) {
             this.stop();
-            window.monadPlayhouse.endGame();
         }
     }
 
@@ -520,6 +578,7 @@ class MemoryGame {
 
     stop() {
         this.isRunning = false;
+        window.monadPlayhouse.showGameOverPopup(this.score, this.gameType);
     }
 
     togglePause() {
@@ -578,7 +637,6 @@ class MemoryGame {
             
             if (this.matchedPairs === 8) {
                 this.stop();
-                window.monadPlayhouse.endGame();
             }
         } else {
             card1.flipped = false;
@@ -616,12 +674,17 @@ class MemoryGame {
             this.context.lineWidth = 2;
             this.context.strokeRect(x, y, cardWidth - 10, cardHeight - 10);
             
-            // Draw symbol
+            // Draw symbol or question mark
             if (card.flipped || card.matched) {
                 this.context.fillStyle = '#000';
                 this.context.font = '40px Arial';
                 this.context.textAlign = 'center';
                 this.context.fillText(card.symbol, x + cardWidth/2 - 5, y + cardHeight/2 + 15);
+            } else {
+                this.context.fillStyle = '#fff';
+                this.context.font = '40px Arial';
+                this.context.textAlign = 'center';
+                this.context.fillText('?', x + cardWidth/2 - 5, y + cardHeight/2 + 15);
             }
         });
     }
@@ -682,6 +745,10 @@ class MathGame {
             this.score += 10;
             window.monadPlayhouse.currentScore = this.score;
             this.generateProblem();
+            window.monadPlayhouse.showNotification('Correct! +10 points', 'success');
+        } else {
+            window.monadPlayhouse.showNotification(`Wrong! The answer was ${this.currentProblem.answer}`, 'error');
+            this.stop();
         }
         this.userAnswer = '';
         this.draw();
@@ -694,6 +761,7 @@ class MathGame {
 
     stop() {
         this.isRunning = false;
+        window.monadPlayhouse.showGameOverPopup(this.score, this.gameType);
     }
 
     togglePause() {
@@ -720,7 +788,6 @@ class MathGame {
     }
 }
 
-// Placeholder implementations for other games
 class ColorGame { 
     constructor(canvas, context) { 
         this.canvas = canvas; 
@@ -732,14 +799,23 @@ class ColorGame {
         this.sequence = [];
         this.userSequence = [];
         this.level = 1;
+        this.waitingForUser = false;
     } 
+    
     start() { 
         this.isRunning = true;
         this.generateSequence();
         this.showSequence();
     } 
-    stop() { this.isRunning = false; } 
-    togglePause() { this.isPaused = !this.isPaused; }
+    
+    stop() { 
+        this.isRunning = false;
+        window.monadPlayhouse.showGameOverPopup(this.score, this.gameType);
+    } 
+    
+    togglePause() { 
+        this.isPaused = !this.isPaused; 
+    }
     
     generateSequence() {
         this.sequence = [];
@@ -753,7 +829,8 @@ class ColorGame {
         const interval = setInterval(() => {
             if (i >= this.sequence.length) {
                 clearInterval(interval);
-                this.waitForUser();
+                this.waitingForUser = true;
+                this.draw();
                 return;
             }
             this.highlightColor(this.sequence[i]);
@@ -768,12 +845,13 @@ class ColorGame {
         setTimeout(() => {
             this.context.fillStyle = '#000';
             this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            this.draw();
         }, 500);
     }
     
-    waitForUser() {
+    setupClickHandler() {
         this.canvas.addEventListener('click', (e) => {
-            if (!this.isRunning || this.isPaused) return;
+            if (!this.isRunning || this.isPaused || !this.waitingForUser) return;
             
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
@@ -820,7 +898,6 @@ class ColorGame {
             setTimeout(() => this.showSequence(), 1000);
         } else {
             this.stop();
-            window.monadPlayhouse.endGame();
         }
     }
     
@@ -848,6 +925,19 @@ class ColorGame {
         this.context.fillStyle = '#fff';
         this.context.font = '20px Arial';
         this.context.fillText(`Score: ${this.score} | Level: ${this.level}`, 10, 30);
+        
+        if (this.waitingForUser) {
+            this.context.fillStyle = '#fff';
+            this.context.font = '24px Arial';
+            this.context.textAlign = 'center';
+            this.context.fillText('Click the colors in the same sequence!', this.canvas.width/2, 550);
+        }
+        
+        // Setup click handler if not already done
+        if (this.waitingForUser && !this.clickHandlerSet) {
+            this.setupClickHandler();
+            this.clickHandlerSet = true;
+        }
     }
 }
 
