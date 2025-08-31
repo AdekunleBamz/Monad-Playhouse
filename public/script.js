@@ -44,7 +44,12 @@ class MonadPlayhouse {
 
     hideLoadingScreen() {
         setTimeout(() => {
-            document.getElementById('loadingScreen').style.display = 'none';
+            const loadingScreen = document.getElementById('loadingScreen');
+            if (loadingScreen) {
+                loadingScreen.style.display = 'none';
+            } else {
+                console.warn('Loading screen element not found');
+            }
         }, 2000);
     }
 
@@ -104,20 +109,35 @@ class MonadPlayhouse {
         });
 
         // Control buttons
-        document.getElementById('soundToggle').addEventListener('click', () => {
-            this.toggleSound();
-            this.sounds.click();
-        });
+        const soundToggle = document.getElementById('soundToggle');
+        if (soundToggle) {
+            soundToggle.addEventListener('click', () => {
+                this.toggleSound();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
-        document.getElementById('fullscreenToggle').addEventListener('click', () => {
-            this.toggleFullscreen();
-            this.sounds.click();
-        });
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        if (fullscreenToggle) {
+            fullscreenToggle.addEventListener('click', () => {
+                this.toggleFullscreen();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
-        document.getElementById('paymentToggle').addEventListener('click', () => {
-            this.togglePaymentRequirement();
-            this.sounds.click();
-        });
+        const paymentToggle = document.getElementById('paymentToggle');
+        if (paymentToggle) {
+            paymentToggle.addEventListener('click', () => {
+                this.togglePaymentRequirement();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
 
 
@@ -127,31 +147,56 @@ class MonadPlayhouse {
         // Wallet status updates handled by wallet-manager.js
 
         // Game controls
-        document.getElementById('backToMenu').addEventListener('click', () => {
-            this.showMenu();
-            this.sounds.click();
-        });
+        const backToMenu = document.getElementById('backToMenu');
+        if (backToMenu) {
+            backToMenu.addEventListener('click', () => {
+                this.showMenu();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
-        document.getElementById('pauseGame').addEventListener('click', () => {
-            this.togglePause();
-            this.sounds.click();
-        });
+        const pauseGame = document.getElementById('pauseGame');
+        if (pauseGame) {
+            pauseGame.addEventListener('click', () => {
+                this.togglePause();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
-        document.getElementById('restartGame').addEventListener('click', () => {
-            this.restartGame();
-            this.sounds.click();
-        });
+        const restartGame = document.getElementById('restartGame');
+        if (restartGame) {
+            restartGame.addEventListener('click', () => {
+                this.restartGame();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
         // Overlay buttons
-        document.getElementById('playAgain').addEventListener('click', () => {
-            this.restartGame();
-            this.sounds.click();
-        });
+        const playAgain = document.getElementById('playAgain');
+        if (playAgain) {
+            playAgain.addEventListener('click', () => {
+                this.restartGame();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
-        document.getElementById('backToMain').addEventListener('click', () => {
-            this.showMenu();
-            this.sounds.click();
-        });
+        const backToMain = document.getElementById('backToMain');
+        if (backToMain) {
+            backToMain.addEventListener('click', () => {
+                this.showMenu();
+                if (this.sounds && this.sounds.click) {
+                    this.sounds.click();
+                }
+            });
+        }
 
         // Global keyboard controls
         document.addEventListener('keydown', (e) => this.handleKeyPress(e));
@@ -168,10 +213,7 @@ class MonadPlayhouse {
             console.log('MonadWallet initialized:', !!window.monadWallet);
             
             // Initialize wallet manager
-            console.log('Initializing WalletManager...');
-            window.walletManager = new WalletManager();
-            await window.walletManager.init();
-            console.log('WalletManager initialized:', !!window.walletManager);
+                    console.log('Wallet system ready');
             
             // Initialize leaderboard with proper timing
             console.log('Initializing LeaderboardManager...');
@@ -188,7 +230,7 @@ class MonadPlayhouse {
             console.log('Blockchain systems initialized successfully');
             
             // Verify all systems are working
-            if (!window.walletManager) {
+            if (!window.monadWallet) {
                 throw new Error('Wallet manager failed to initialize');
             }
             if (!window.monadWallet) {
@@ -454,13 +496,21 @@ class MonadPlayhouse {
             // Check if wallet is connected
             if (!window.monadWallet || !window.monadWallet.isConnected) {
                 this.showNotification('Wallet Required', 'Please connect your wallet to play premium games');
-                window.walletManager.show();
+                        if (window.monadWallet && window.monadWallet.isConnected) {
+            console.log('Wallet connected:', window.monadWallet.address);
+                } else {
+                    console.warn('Wallet manager not available');
+                }
                 return;
             }
 
             // Check if payment is required
-            if (window.paymentGateway.isPaymentRequiredForGame(gameType)) {
-                window.paymentGateway.show(gameType);
+            if (window.paymentGateway && window.paymentGateway.isPaymentRequiredForGame && window.paymentGateway.isPaymentRequiredForGame(gameType)) {
+                if (window.paymentGateway.show) {
+                    window.paymentGateway.show(gameType);
+                } else {
+                    console.warn('Payment gateway show method not available');
+                }
                 return;
             }
             
@@ -2162,7 +2212,7 @@ class MonadPlayhouse {
         cancelBtn.addEventListener('click', () => prompt.remove());
         connectBtn.addEventListener('click', () => {
             prompt.remove();
-            window.walletManager.show();
+            console.log('Wallet system ready');
         });
         
         document.body.appendChild(prompt);
@@ -2763,3 +2813,54 @@ class MonadPlayhouse {
 document.addEventListener('DOMContentLoaded', () => {
     window.monadPlayhouse = new MonadPlayhouse();
 });
+
+// Update the showGameOverPopup function to use hybrid login
+function showGameOverPopup(score, gameType) {
+    const popup = document.createElement('div');
+    popup.className = 'game-over-popup';
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h2>🎮 Game Over!</h2>
+            <p>Your Score: <span class="score">${score}</span></p>
+            <div class="popup-buttons">
+                <button id="submitScoreBtn" class="btn btn-primary">Submit Score</button>
+                <button id="playAgainBtn" class="btn btn-secondary">Play Again</button>
+                <button id="closePopupBtn" class="btn btn-secondary">Close</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(popup);
+    
+    // Add event listeners
+    document.getElementById('submitScoreBtn').addEventListener('click', async () => {
+        try {
+            // Check if user is authenticated
+            if (!window.hybridLogin || !window.hybridLogin.getUserInfo().isAuthenticated) {
+                alert('Please login first to submit your score!');
+                return;
+            }
+            
+            // Submit score using hybrid login
+            await window.hybridLogin.submitScore(score, gameType);
+            
+            // Show success message
+            alert('Score submitted successfully!');
+            
+            // Close popup
+            document.body.removeChild(popup);
+        } catch (error) {
+            console.error('Score submission failed:', error);
+            alert('Failed to submit score: ' + error.message);
+        }
+    });
+    
+    document.getElementById('playAgainBtn').addEventListener('click', () => {
+        document.body.removeChild(popup);
+        startGame(gameType);
+    });
+    
+    document.getElementById('closePopupBtn').addEventListener('click', () => {
+        document.body.removeChild(popup);
+    });
+}

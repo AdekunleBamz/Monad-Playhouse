@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hybrid Login Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .login-buttons {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .login-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .wallet-btn { background: #4CAF50; color: white; }
+        .privy-btn { background: #2196F3; color: white; }
+        .logout-btn { background: #f44336; color: white; }
+        .user-info {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .test-btn {
+            background: #FF9800;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background: rgba(76, 175, 80, 0.3); }
+        .error { background: rgba(244, 67, 54, 0.3); }
+        .info { background: rgba(33, 150, 243, 0.3); }
+    </style>
+</head>
+<body>
+    <h1>🔗 Hybrid Login System Test</h1>
+    
+    <div class="test-section">
+        <h2>Authentication Status</h2>
+        <div id="userInfo" class="user-info" style="display: none;"></div>
+        <div class="login-buttons">
+            <button id="walletLoginBtn" class="login-btn wallet-btn">🔗 Connect Wallet</button>
+            <button id="privyLoginBtn" class="login-btn privy-btn">🎯 Sign in with Monad Games ID</button>
+            <button id="logoutBtn" class="login-btn logout-btn" style="display: none;">🚪 Logout</button>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>API Tests</h2>
+        <button class="test-btn" onclick="testHealth()">Test Health API</button>
+        <button class="test-btn" onclick="testConfig()">Test Config API</button>
+        <button class="test-btn" onclick="testLeaderboard()">Test Leaderboard API</button>
+        <button class="test-btn" onclick="testScoreSubmission()">Test Score Submission</button>
+        <div id="apiResults"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>System Status</h2>
+        <div id="systemStatus"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://privy.io/sdk.js"></script>
+    <script src="config/contract.json"></script>
+    <script src="wallet.js"></script>
+    <script src="mgid-manager.js"></script>
+    <script src="hybrid-login.js"></script>
+    <script src="leaderboard.js"></script>
+
+    <script>
+        // Test functions
+        async function testHealth() {
+            try {
+                const response = await fetch('http://localhost:3001/api/health');
+                const data = await response.json();
+                showResult('Health API', 'success', `Server is running: ${data.status}`);
+            } catch (error) {
+                showResult('Health API', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        async function testConfig() {
+            try {
+                const response = await fetch('http://localhost:3001/api/config');
+                const data = await response.json();
+                showResult('Config API', 'success', `Privy App ID: ${data.privyAppId}, MGID Enabled: ${data.mgidEnabled}`);
+            } catch (error) {
+                showResult('Config API', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        async function testLeaderboard() {
+            try {
+                const response = await fetch('http://localhost:3001/api/leaderboard/1');
+                const data = await response.json();
+                showResult('Leaderboard API', 'success', `Loaded ${data.length} scores for Snake game`);
+            } catch (error) {
+                showResult('Leaderboard API', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        async function testScoreSubmission() {
+            try {
+                if (!window.hybridLogin || !window.hybridLogin.getUserInfo().isAuthenticated) {
+                    showResult('Score Submission', 'error', 'User not authenticated');
+                    return;
+                }
+
+                const result = await window.hybridLogin.submitScore(100, 1);
+                showResult('Score Submission', 'success', `Score submitted: ${result.message}`);
+            } catch (error) {
+                showResult('Score Submission', 'error', `Failed: ${error.message}`);
+            }
+        }
+
+        function showResult(testName, type, message) {
+            const resultsDiv = document.getElementById('apiResults');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `status ${type}`;
+            resultDiv.innerHTML = `<strong>${testName}:</strong> ${message}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function updateSystemStatus() {
+            const statusDiv = document.getElementById('systemStatus');
+            const hybridLogin = window.hybridLogin;
+            const monadWallet = window.monadWallet;
+            const leaderboardManager = window.leaderboardManager;
+
+            let status = '';
+            status += `<div class="status info"><strong>Hybrid Login:</strong> ${hybridLogin ? 'Loaded' : 'Not loaded'}</div>`;
+            status += `<div class="status info"><strong>Monad Wallet:</strong> ${monadWallet ? 'Loaded' : 'Not loaded'}</div>`;
+            status += `<div class="status info"><strong>Leaderboard Manager:</strong> ${leaderboardManager ? 'Loaded' : 'Not loaded'}</div>`;
+            
+            if (hybridLogin) {
+                const userInfo = hybridLogin.getUserInfo();
+                status += `<div class="status ${userInfo.isAuthenticated ? 'success' : 'info'}"><strong>Authentication:</strong> ${userInfo.isAuthenticated ? `Authenticated (${userInfo.authType})` : 'Not authenticated'}</div>`;
+            }
+
+            statusDiv.innerHTML = status;
+        }
+
+        // Update status every 2 seconds
+        setInterval(updateSystemStatus, 2000);
+        updateSystemStatus();
+    </script>
+</body>
+</html>

@@ -48,11 +48,26 @@ class MonadWallet {
     // Load configuration
     async loadConfig() {
         try {
-            const response = await fetch('/config/contract.json');
+            // Try to load from API first
+            const response = await fetch('http://localhost:3001/api/config');
             if (!response.ok) {
-                throw new Error('Failed to load config');
+                throw new Error('Failed to load config from API');
             }
-            this.config = await response.json();
+            const apiConfig = await response.json();
+            console.log('API config loaded:', apiConfig);
+            
+            // Load local config for additional fields
+            const localResponse = await fetch('/config/contract.json');
+            if (!localResponse.ok) {
+                throw new Error('Failed to load local config');
+            }
+            this.config = await localResponse.json();
+            
+            // Merge API config with local config
+            this.config.privyAppId = apiConfig.privyAppId;
+            this.config.mgidContractAddress = apiConfig.mgidContractAddress;
+            this.config.gameName = apiConfig.gameName;
+            
             console.log('Config loaded successfully:', this.config);
         } catch (error) {
             console.error('Failed to load config:', error);

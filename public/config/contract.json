@@ -1,33 +1,51 @@
 
 {
   "contractAddress": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+  "networkId": "10143",
+  "chainId": "10143",
+  "chainName": "Monad Testnet",
+  "rpcUrl": "https://testnet-rpc.monad.xyz",
+  "explorerUrl": "https://testnet.monadexplorer.com",
+  "entryFee": "0.1",
+  "currency": "MON",
+  "decimals": 18,
   "network": {
     "name": "Monad Testnet",
     "chainId": "10143",
     "rpcUrl": "https://testnet-rpc.monad.xyz",
     "blockExplorer": "https://testnet.monadexplorer.com"
   },
-  "entryFee": "0.1",
   "gameTypes": {
-    "snake": 0,
-    "memory": 1,
-    "math": 2,
-    "color": 3,
-    "tetris": 4,
-    "flappy": 5,
-    "spelling": 6,
-    "carRace": 7,
-    "monadRunner": 8,
-    "cryptoPuzzle": 9,
-    "tokenCollector": 10,
-    "blockchainTetris": 11
+    "snake": 1,
+    "memory": 2,
+    "math": 3,
+    "color": 4,
+    "tetris": 5,
+    "flappy": 6,
+    "spelling": 7,
+    "carRace": 8,
+    "monadRunner": 9,
+    "cryptoPuzzle": 10,
+    "tokenCollector": 11,
+    "blockchainTetris": 12
   },
   "rewards": {
-    "topPlayerPercentage": 50,
-    "platformFeePercentage": 10,
-    "maxLeaderboardSize": 100
+    "snake": { "first": 10, "second": 5, "third": 2 },
+    "memory": { "first": 8, "second": 4, "third": 1 },
+    "math": { "first": 6, "second": 3, "third": 1 },
+    "color": { "first": 5, "second": 2, "third": 1 },
+    "tetris": { "first": 12, "second": 6, "third": 3 },
+    "flappy": { "first": 7, "second": 3, "third": 1 },
+    "spelling": { "first": 9, "second": 4, "third": 2 },
+    "carRace": { "first": 11, "second": 5, "third": 2 },
+    "monadRunner": { "first": 15, "second": 7, "third": 3 },
+    "cryptoPuzzle": { "first": 20, "second": 10, "third": 5 },
+    "tokenCollector": { "first": 8, "second": 4, "third": 2 },
+    "blockchainTetris": { "first": 10, "second": 5, "third": 2 }
   },
   "validation": {
+    "minScore": 1,
+    "maxScore": 999999,
     "maxPossibleScores": {
       "snake": 10000,
       "memory": 10000,

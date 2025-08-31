@@ -3,175 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monad Playhouse - 12 Blockchain Games</title>
-    <link rel="stylesheet" href="style.css">
-    <!-- Privy SDK for Monad Games ID -->
-    <script src="https://unpkg.com/@privy-io/privy-browser@latest/dist/privy-browser.js"></script>
+    <title>Monad Playhouse - Choose Your Adventure</title>
+    <link rel="stylesheet" href="style.css?v=40">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <h1 class="logo">🎮 Monad Playhouse</h1>
-            <div class="header-controls">
-                <!-- Existing wallet connect button -->
-                <button id="walletConnect" class="control-btn wallet-btn" title="Connect Wallet">🔗</button>
-                <!-- New MGID login button -->
-                <button id="mgidLogin" class="control-btn mgid-btn" title="Sign in with Monad Games ID">🎯</button>
-                <button id="leaderboardBtn" class="control-btn leaderboard-btn" title="Leaderboard">🏆</button>
+    <div class="container">
+        <header>
+            <h1>🎮 Monad Playhouse</h1>
+            <p class="subtitle">Choose Your Adventure</p>
+            
+            <!-- Login Section -->
+            <div class="login-section">
+                <div id="userInfo" class="user-info" style="display: none;"></div>
+                <div class="login-buttons">
+                    <button id="walletLoginBtn" class="login-btn wallet-btn">🔗 Connect Wallet</button>
+                    <button id="privyLoginBtn" class="login-btn privy-btn">🎯 Sign in with Monad Games ID</button>
+                    <button id="logoutBtn" class="login-btn logout-btn" style="display: none;">🚪 Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <div id="gameMenu">
+            <div class="game-grid">
+                <div class="game-card" data-game="snake">
+                    <h3>🐍 Snake</h3>
+                    <p>Classic snake game with a twist</p>
+                    <button class="play-btn">Play</button>
+                </div>
+                
+                <div class="game-card" data-game="memory">
+                    <h3>🧠 Memory</h3>
+                    <p>Test your memory skills</p>
+                    <button class="play-btn">Play</button>
+                </div>
+                
+                <div class="game-card" data-game="math">
+                    <h3>🔢 Math</h3>
+                    <p>Quick math challenges</p>
+                    <button class="play-btn">Play</button>
+                </div>
+                
+                <div class="game-card" data-game="color">
+                    <h3>🎨 Color</h3>
+                    <p>Color matching game</p>
+                    <button class="play-btn">Play</button>
+                </div>
+            </div>
+            </div>
+        </main>
+
+        <div class="controls">
+            <button id="soundToggle" class="control-btn">🔊</button>
+            <button id="fullscreenToggle" class="control-btn">⛶</button>
+        </div>
+
+        <div id="loadingScreen" style="display:none;"></div>
+
+        <div id="gameCanvas" class="game-container" style="display: none;">
+            <canvas id="gameCanvasElement"></canvas>
+            <div id="gameControls" class="game-controls">
+                <span id="currentGameName" style="display:none;"></span>
+                <span id="gameTimer" style="display:none;"></span>
+                <button id="backToMenu" class="back-btn">← Back to Menu</button>
             </div>
         </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <!-- Adventure Text -->
-        <div class="adventure-text">
-            <h2>🎯 Choose Your Adventure</h2>
-            <p>Experience 12 unique blockchain games with real rewards on Monad</p>
-        </div>
-        
-        <!-- Sound and Fullscreen Controls -->
-        <div class="game-controls">
-            <button id="soundToggle" class="control-btn sound-btn" title="Toggle Sound">🔊</button>
-            <button id="fullscreenToggle" class="control-btn fullscreen-btn" title="Toggle Fullscreen">⛶</button>
-        </div>
-        
-        <div class="games-grid">
-            <!-- Game Cards -->
-            <div class="game-card" data-game="snake">
-                <h3>🐍 Snake</h3>
-                <p>Classic snake game with blockchain rewards</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Use arrow keys to control the snake. Eat food to grow longer. Avoid hitting walls or yourself!
-                </div>
-                <button class="play-btn" data-game="snake">Play Free</button>
-                <button class="play-premium-btn" data-game="snake">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="memory">
-                <h3>🧠 Memory</h3>
-                <p>Test your memory with card matching</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Click cards to flip them. Find matching pairs. Remember card positions to complete the game quickly!
-                </div>
-                <button class="play-btn" data-game="memory">Play Free</button>
-                <button class="play-premium-btn" data-game="memory">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="math">
-                <h3>🔢 Math</h3>
-                <p>Solve math problems for rewards</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Solve math equations as quickly as possible. Type your answer and press Enter. Speed and accuracy matter!
-                </div>
-                <button class="play-btn" data-game="math">Play Free</button>
-                <button class="play-premium-btn" data-game="math">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="color">
-                <h3>🎨 Color</h3>
-                <p>Match colors in sequence</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Watch the color sequence and repeat it by clicking the colored buttons in the same order!
-                </div>
-                <button class="play-btn" data-game="color">Play Free</button>
-                <button class="play-premium-btn" data-game="color">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="tetris">
-                <h3>🧩 Tetris</h3>
-                <p>Classic block stacking game</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Use arrow keys to move and rotate blocks. Complete horizontal lines to clear them. Don't let blocks reach the top!
-                </div>
-                <button class="play-btn" data-game="tetris">Play Free</button>
-                <button class="play-premium-btn" data-game="tetris">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="flappy">
-                <h3>🐦 Flappy Bird</h3>
-                <p>Navigate through obstacles</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Click or press space to make the bird flap. Navigate through pipes without hitting them. Go as far as possible!
-                </div>
-                <button class="play-btn" data-game="flappy">Play Free</button>
-                <button class="play-premium-btn" data-game="flappy">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="spelling">
-                <h3>📝 Spelling</h3>
-                <p>Spell words correctly for points</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Listen to the word and type it correctly. Pay attention to spelling and capitalization!
-                </div>
-                <button class="play-btn" data-game="spelling">Play Free</button>
-                <button class="play-premium-btn" data-game="spelling">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="carRace">
-                <h3>🏎️ Car Race</h3>
-                <p>Race against time and obstacles</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Use arrow keys to control your car. Avoid obstacles and collect power-ups. Reach the finish line as quickly as possible!
-                </div>
-                <button class="play-btn" data-game="carRace">Play Free</button>
-                <button class="play-premium-btn" data-game="carRace">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="monadRunner">
-                <h3>🏃 Monad Runner</h3>
-                <p>Endless runner with blockchain elements</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Jump over obstacles and collect tokens. Use spacebar to jump. The longer you run, the higher your score!
-                </div>
-                <button class="play-btn" data-game="monadRunner">Play Free</button>
-                <button class="play-premium-btn" data-game="monadRunner">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="cryptoPuzzle">
-                <h3>🔐 Crypto Puzzle</h3>
-                <p>Solve cryptographic challenges</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Decode messages and solve puzzles. Use hints wisely. Each puzzle gets more challenging!
-                </div>
-                <button class="play-btn" data-game="cryptoPuzzle">Play Free</button>
-                <button class="play-premium-btn" data-game="cryptoPuzzle">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="tokenCollector">
-                <h3>🪙 Token Collector</h3>
-                <p>Collect tokens while avoiding enemies</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Move around to collect tokens. Avoid enemies that chase you. Collect as many tokens as possible!
-                </div>
-                <button class="play-btn" data-game="tokenCollector">Play Free</button>
-                <button class="play-premium-btn" data-game="tokenCollector">Play Premium</button>
-            </div>
-
-            <div class="game-card" data-game="blockchainTetris">
-                <h3>⛓️ Blockchain Tetris</h3>
-                <p>Tetris with blockchain mechanics</p>
-                <div class="game-instructions">
-                    <strong>How to play:</strong> Classic Tetris with blockchain elements. Clear lines to mine blocks. Chain reactions give bonus points!
-                </div>
-                <button class="play-btn" data-game="blockchainTetris">Play Free</button>
-                <button class="play-premium-btn" data-game="blockchainTetris">Play Premium</button>
+        <div id="gameOverlay" style="display:none;">
+            <h2 id="overlayTitle"></h2>
+            <div id="overlayMessage"></div>
+            <div>Score: <span id="overlayScore">0</span></div>
+            <div class="popup-buttons">
+                <button id="submitScoreBtn" class="btn btn-primary">Submit Score</button>
+                <button id="playAgainBtn" class="btn btn-secondary">Play Again</button>
+                <button id="closePopupBtn" class="btn btn-secondary">Close</button>
             </div>
         </div>
-    </main>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>Built with Love by BamzzStudio on Monad for Monad Mission 7</p>
-    </footer>
+        <div id="leaderboard" class="leaderboard-container"></div>
+    </div>
 
     <!-- Scripts -->
-    <script src="mgid-manager.js?v=10"></script>
-    <script src="wallet.js?v=37"></script>
-    <script src="wallet-manager.js?v=37"></script>
-    <script src="leaderboard.js?v=37"></script>
-    <script src="payment.js?v=34"></script>
-    <script src="script.js?v=37"></script>
+    <script src="https://privy.io/sdk.js"></script>
+    <script src="wallet.js?v=40"></script>
+    <script src="mgid-manager.js?v=40"></script>
+    <script src="hybrid-login.js?v=40"></script>
+    <script src="leaderboard.js?v=40"></script>
+    <script src="payment.js?v=40"></script>
+    <script src="script.js?v=40"></script>
 </body>
 </html>

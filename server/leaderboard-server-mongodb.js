@@ -2,6 +2,23 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { MongoClient } = require('mongodb');
+const { ethers } = require('ethers');
+
+// Privy integration
+const { PrivyClient } = require('@privy-io/server-auth');
+
+// Initialize Privy client
+let privyClient;
+if (process.env.PRIVY_APP_ID && process.env.PRIVY_API_KEY) {
+    try {
+        privyClient = new PrivyClient(process.env.PRIVY_APP_ID, process.env.PRIVY_API_KEY);
+        console.log('✅ Privy client initialized');
+    } catch (error) {
+        console.warn('⚠️ Privy client initialization failed:', error.message);
+    }
+} else {
+    console.log('ℹ️ Privy integration disabled - missing credentials');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -20,6 +37,29 @@ if (!MONGODB_URI) {
     process.exit(1);
 }
 let db;
+
+// MGID Contract Configuration
+const MGID_CONTRACT_ADDRESS = '0xceCBFF203C8B6044F52CE23D914A1bfD997541A4';
+const MGID_CONTRACT_ABI = [
+    "function updatePlayerData(address player, uint256 scoreAmount, uint256 transactionAmount) external"
+];
+
+// Connect to Monad testnet (only if private key is provided)
+let provider, gameSigner, mgidContract;
+console.log('🔍 Debug: GAME_PRIVATE_KEY =', process.env.GAME_PRIVATE_KEY ? 'SET' : 'NOT SET');
+console.log('🔍 Debug: PRIVY_APP_ID =', process.env.PRIVY_APP_ID ? 'SET' : 'NOT SET');
+if (process.env.GAME_PRIVATE_KEY && process.env.GAME_PRIVATE_KEY !== '0x0000000000000000000000000000000000000000000000000000000000000000') {
+    try {
+        provider = new ethers.JsonRpcProvider('https://rpc.testnet.monad.xyz');
+        gameSigner = new ethers.Wallet(process.env.GAME_PRIVATE_KEY, provider);
+        mgidContract = new ethers.Contract(MGID_CONTRACT_ADDRESS, MGID_CONTRACT_ABI, gameSigner);
+        console.log('✅ MGID contract integration enabled');
+    } catch (error) {
+        console.warn('⚠️ MGID contract integration disabled due to invalid private key');
+    }
+} else {
+    console.log('ℹ️ MGID contract integration disabled - no private key provided');
+}
 
 // Game validation rules
 const GAME_RULES = {
@@ -101,6 +141,32 @@ app.get('/', (req, res) => {
     });
 });
 
+// API root endpoint
+app.get('/api', (req, res) => {
+    res.json({
+        message: '🎮 Monad Playhouse API',
+        version: '1.0.0',
+        status: 'running',
+        endpoints: {
+            config: '/api/config',
+            health: '/api/health',
+            leaderboard: '/api/leaderboard/:gameType',
+            submitScore: '/api/submit-score',
+            submitMGID: '/api/submit-mgid-score',
+            games: '/api/games'
+        }
+    });
+});
+
+// Frontend config endpoint (safe to expose)
+app.get('/api/config', (req, res) => {
+    res.json({
+        privyAppId: process.env.PRIVY_APP_ID || 'cmezonnoq008yjv0b4lnrusih',
+        mgidContractAddress: MGID_CONTRACT_ADDRESS,
+        gameName: 'Monad Playhouse'
+    });
+});
+
 // Games endpoint - list all available games
 app.get('/api/games', (req, res) => {
     const games = Object.entries(GAME_RULES).map(([id, game]) => ({
@@ -149,12 +215,40 @@ app.get('/api/leaderboard/:gameType', async (req, res) => {
             .limit(limit)
             .toArray();
 
+        // Format scores for frontend display
+        const formattedScores = scores.map((score, index) => {
+            let playerId = 'Anonymous';
+            let authType = 'unknown';
+
+            if (score.playerAddress) {
+                playerId = `${score.playerAddress.slice(0, 6)}...${score.playerAddress.slice(-4)}`;
+                authType = 'wallet';
+            } else if (score.privyId) {
+                playerId = `Player${score.privyId.slice(-6)}`;
+                authType = 'privy';
+            } else if (score.playerName && score.playerName !== 'Anonymous') {
+                playerId = score.playerName;
+                authType = 'name';
+            }
+
+            return {
+                rank: index + 1,
+                playerId,
+                playerName: score.playerName || playerId,
+                score: score.score,
+                gameDuration: score.gameDuration,
+                timestamp: score.timestamp,
+                authType,
+                gameName: score.gameName
+            };
+        });
+
         const totalPlayers = await db.collection('scores')
             .countDocuments({ gameType });
 
         res.json({
             success: true,
-            scores,
+            scores: formattedScores,
             totalPlayers,
             gameType,
             gameName: GAME_RULES[gameType].name
@@ -203,8 +297,23 @@ app.post('/api/submit-score', async (req, res) => {
             gameName: GAME_RULES[gameType].name
         };
 
-        // Insert score
+        // Insert score to MongoDB
         const result = await db.collection('scores').insertOne(scoreDoc);
+
+        // Submit to Monad Games ID contract (if playerAddress is valid and MGID is available)
+        let mgidTxHash = null;
+        if (playerAddress && playerAddress !== 'unknown' && mgidContract) {
+            try {
+                console.log('Submitting score to MGID contract:', { playerAddress, score });
+                const tx = await mgidContract.updatePlayerData(playerAddress, score, 1);
+                await tx.wait();
+                mgidTxHash = tx.hash;
+                console.log('MGID score submitted successfully:', mgidTxHash);
+            } catch (mgidError) {
+                console.error('MGID submission failed:', mgidError);
+                // Don't fail the entire request if MGID submission fails
+            }
+        }
 
         // Get player's rank
         const playerRank = await db.collection('scores').countDocuments({
@@ -216,12 +325,43 @@ app.post('/api/submit-score', async (req, res) => {
             success: true,
             rank: playerRank,
             scoreId: result.insertedId,
-            message: `Score submitted! You're ranked #${playerRank}`
+            mgidTxHash: mgidTxHash,
+            message: `Score submitted! You're ranked #${playerRank}${mgidTxHash ? ' (MGID: ' + mgidTxHash.slice(0, 10) + '...)' : ''}`
         });
 
     } catch (error) {
         console.error('Score submission error:', error);
         res.status(500).json({ error: 'Failed to submit score' });
+    }
+});
+
+// Dedicated MGID score submission endpoint
+app.post('/api/submit-mgid-score', async (req, res) => {
+    try {
+        const { player, scoreAmount, transactionAmount } = req.body;
+
+        if (!player || !scoreAmount) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        if (!mgidContract) {
+            return res.status(500).json({ error: 'MGID contract integration not available' });
+        }
+
+        console.log('Submitting to MGID contract:', { player, scoreAmount, transactionAmount });
+        
+        const tx = await mgidContract.updatePlayerData(player, scoreAmount, transactionAmount || 1);
+        await tx.wait();
+
+        res.json({
+            success: true,
+            txHash: tx.hash,
+            message: 'Score submitted to Monad Games ID successfully'
+        });
+
+    } catch (error) {
+        console.error('MGID score submission error:', error);
+        res.status(500).json({ error: 'Failed to submit score to MGID' });
     }
 });
 

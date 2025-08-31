@@ -1,22 +1,22 @@
 {
-  "name": "monad-playhouse-leaderboard",
-  "version": "1.0.0",
-  "description": "Monad Playhouse Global Leaderboard API",
-  "main": "leaderboard-server-mongodb.js",
+  "name": "monad-playhouse-server",
+  "version": "2.0.0",
+  "description": "Monad Playhouse Leaderboard Server with Hybrid Authentication",
+  "main": "leaderboard-server-hybrid.js",
   "scripts": {
-    "start": "node leaderboard-server-mongodb.js",
-    "dev": "node leaderboard-server-simple.js"
+    "start": "node leaderboard-server-hybrid.js",
+    "dev": "node leaderboard-server-hybrid.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "mongodb": "^6.3.0",
-    "dotenv": "^16.3.1"
+    "ethers": "^6.8.1",
+    "dotenv": "^16.3.1",
+    "@privy-io/server-auth": "^1.0.0"
   },
-  "engines": {
-    "node": ">=18.0.0"
-  },
-  "keywords": ["monad", "playhouse", "leaderboard", "api", "mongodb"],
-  "author": "BamzzStudio",
+  "keywords": ["monad", "playhouse", "leaderboard", "blockchain", "privy"],
+  "author": "Monad Playhouse Team",
   "license": "MIT"
 }
