@@ -83,6 +83,56 @@ function validateScore(gameType, score, gameDuration, playerAddress) {
     return { valid: true };
 }
 
+// Root route - API documentation
+app.get('/', (req, res) => {
+    res.json({
+        message: '🎮 Monad Playhouse Leaderboard API',
+        version: '1.0.0',
+        status: 'running',
+        database: db ? 'connected' : 'disconnected',
+        endpoints: {
+            health: '/api/health',
+            leaderboard: '/api/leaderboard/:gameType',
+            submitScore: '/api/submit-score',
+            games: '/api/games'
+        },
+        games: Object.keys(GAME_RULES).length,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Games endpoint - list all available games
+app.get('/api/games', (req, res) => {
+    const games = Object.entries(GAME_RULES).map(([id, game]) => ({
+        id: parseInt(id),
+        name: game.name,
+        maxScore: game.maxScore,
+        minDuration: game.minDuration
+    }));
+    
+    res.json({
+        success: true,
+        games,
+        totalGames: games.length
+    });
+});
+
+// Games endpoint
+app.get('/api/games', (req, res) => {
+    const games = Object.entries(GAME_RULES).map(([id, game]) => ({
+        id: parseInt(id),
+        name: game.name,
+        maxScore: game.maxScore,
+        minDuration: game.minDuration
+    }));
+    
+    res.json({
+        success: true,
+        games,
+        totalGames: games.length
+    });
+});
+
 // Routes
 app.get('/api/leaderboard/:gameType', async (req, res) => {
     try {
