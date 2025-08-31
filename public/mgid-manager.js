@@ -27,19 +27,47 @@ class MGIDManager {
             
             this.initializing = true;
             
-            // TEMPORARILY DISABLED: Privy SDK integration
-            console.log('MGID temporarily disabled - focusing on core wallet functionality');
-            this.isInitialized = true;
-            this.initializing = false;
+            // Check if Privy is available
+            if (typeof Privy === 'undefined') {
+                console.warn('Privy SDK not loaded, will retry once...');
+                this.initializing = false;
+                // Only retry once
+                if (!this.retryAttempted) {
+                    this.retryAttempted = true;
+                    setTimeout(() => this.init(), 3000);
+                } else {
+                    console.warn('Privy SDK failed to load after retry, using fallback mode');
+                    this.setupEventListeners();
+                    this.isInitialized = true;
+                }
+                return;
+            }
             
-            // Set up basic event listeners
+            // Initialize Privy
+            this.privy = new Privy({
+                appId: 'clx8euall0037le0my79qpz42', // Your Privy App ID
+                config: {
+                    loginMethodsAndOrder: ['cross_app'],
+                    crossAppAccount: {
+                        providerAppId: this.crossAppId
+                    }
+                }
+            });
+
+            // Set up event listeners
             this.setupEventListeners();
             
-            console.log('MGID Manager initialized (basic mode)');
+            this.isInitialized = true;
+            this.initializing = false;
+            console.log('MGID Manager initialized successfully with Privy');
             
         } catch (error) {
             console.error('Failed to initialize MGID Manager:', error);
             this.initializing = false;
+            // Fallback mode
+            this.setupEventListeners();
+            this.isInitialized = true;
+            console.log('MGID Manager initialized in fallback mode');
         }
     }
 
@@ -68,13 +96,15 @@ class MGIDManager {
         try {
             console.log('Starting MGID login...');
             
-            // MGID temporarily disabled
-            alert('MGID login temporarily disabled. Please use regular wallet connection for now.');
-            console.log('MGID login skipped - using regular wallet');
+            if (!this.privy) {
+                throw new Error('Privy not initialized');
+            }
+
+            await this.privy.login();
             
         } catch (error) {
             console.error('MGID login failed:', error);
-            alert('MGID login temporarily unavailable. Please use regular wallet connection.');
+            this.showNotification('MGID login failed. Please try again.', 'error');
         }
     }
 

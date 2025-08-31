@@ -100,6 +100,59 @@ body {
 /* Main Content */
 .main-content {
     padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Adventure Text */
+.adventure-text {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(0, 255, 136, 0.3);
+}
+
+.adventure-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, #00ff88, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.adventure-text p {
+    font-size: 1.2rem;
+    color: #cccccc;
+    opacity: 0.9;
+}
+
+/* Game Controls */
+.game-controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 2rem;
+}
+
+.sound-btn, .fullscreen-btn {
+    background: rgba(255, 107, 157, 0.2);
+    border-color: #ff6b9d;
+    color: #ff6b9d;
+    font-size: 18px;
+    padding: 12px 16px;
+}
+
+.sound-btn:hover, .fullscreen-btn:hover {
+    background: rgba(255, 107, 157, 0.3);
+    border-color: #ff6b9d;
+    transform: scale(1.1);
+}
+.main-content {
+    padding: 2rem;
     max-width: 1200px;
     margin: 0 auto;
 }

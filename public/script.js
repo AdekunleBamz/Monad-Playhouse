@@ -44,6 +44,9 @@ class MonadPlayhouse {
         // Set up event listeners
         this.setupEventListeners();
         
+        // Set up UI controls
+        this.setupUIControls();
+        
         // Initialize leaderboard button
         this.initLeaderboardButton();
     }
@@ -94,6 +97,45 @@ class MonadPlayhouse {
         }, 1000);
     }
 
+    setupUIControls() {
+        // Sound toggle
+        const soundToggle = document.getElementById('soundToggle');
+        if (soundToggle) {
+            soundToggle.addEventListener('click', () => {
+                this.isSoundEnabled = !this.isSoundEnabled;
+                soundToggle.textContent = this.isSoundEnabled ? '🔊' : '🔇';
+                soundToggle.title = this.isSoundEnabled ? 'Sound On' : 'Sound Off';
+                console.log('Sound toggled:', this.isSoundEnabled);
+            });
+        }
+
+        // Fullscreen toggle
+        const fullscreenToggle = document.getElementById('fullscreenToggle');
+        if (fullscreenToggle) {
+            fullscreenToggle.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
+    }
+
+    toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().then(() => {
+                this.isFullscreen = true;
+                console.log('Entered fullscreen mode');
+            }).catch(err => {
+                console.error('Failed to enter fullscreen:', err);
+            });
+        } else {
+            document.exitFullscreen().then(() => {
+                this.isFullscreen = false;
+                console.log('Exited fullscreen mode');
+            }).catch(err => {
+                console.error('Failed to exit fullscreen:', err);
+            });
+        }
+    }
+
     async startFreeGame(gameType) {
         try {
             console.log('Starting free game:', gameType);
@@ -117,7 +159,14 @@ class MonadPlayhouse {
             const isWalletConnected = this.wallet && this.wallet.isConnected;
             const isMGIDAuthenticated = window.mgidManager && window.mgidManager.isAuthenticated;
             
+            console.log('Wallet object:', this.wallet);
             console.log('Wallet connected:', isWalletConnected, 'MGID authenticated:', isMGIDAuthenticated);
+            
+            // Alternative wallet check
+            if (!isWalletConnected && window.walletManager && window.walletManager.isConnected) {
+                console.log('Using wallet manager connection state');
+                isWalletConnected = true;
+            }
             
             if (!isWalletConnected && !isMGIDAuthenticated) {
                 this.showNotification('Please connect your wallet or sign in with Monad Games ID to play premium games.', 'info');
