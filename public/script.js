@@ -156,7 +156,7 @@ class MonadPlayhouse {
             this.playSound('click');
             
             // Check if user is authenticated (either wallet or MGID)
-            const isWalletConnected = this.wallet && this.wallet.isConnected;
+            let isWalletConnected = this.wallet && this.wallet.isConnected;
             const isMGIDAuthenticated = window.mgidManager && window.mgidManager.isAuthenticated;
             
             console.log('Wallet object:', this.wallet);
@@ -223,17 +223,18 @@ class MonadPlayhouse {
         const canvasContainer = document.createElement('div');
         canvasContainer.id = 'gameCanvas';
         canvasContainer.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.9);
-                display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
             flex-direction: column;
-                align-items: center;
-                justify-content: center;
+            align-items: center;
+            justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(10px);
         `;
 
         // Create canvas
@@ -242,9 +243,10 @@ class MonadPlayhouse {
         this.gameCanvas.height = 600;
         this.gameCanvas.style.cssText = `
             border: 3px solid #00ff88;
-                border-radius: 15px;
+            border-radius: 15px;
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
             background: #000;
+            margin: 20px;
         `;
 
         // Create game controls
@@ -655,10 +657,19 @@ class MemoryGame {
         const cardWidth = 100;
         const cardHeight = 100;
         const cardsPerRow = 4;
+        const startX = 50;
+        const startY = 100;
         
-        const row = Math.floor(y / cardHeight);
-        const col = Math.floor(x / cardWidth);
+        // Adjust coordinates to account for card positioning
+        const adjustedX = x - startX;
+        const adjustedY = y - startY;
+        
+        const row = Math.floor(adjustedY / cardHeight);
+        const col = Math.floor(adjustedX / cardWidth);
         const index = row * cardsPerRow + col;
+        
+        // Debug logging
+        console.log(`Click at (${x}, ${y}) -> adjusted (${adjustedX}, ${adjustedY}) -> row ${row}, col ${col} -> index ${index}`);
         
         return index >= 0 && index < this.cards.length ? index : -1;
     }
@@ -796,8 +807,9 @@ class MathGame {
             this.score += 10;
             window.monadPlayhouse.currentScore = this.score;
             this.generateProblem();
-            window.monadPlayhouse.showNotification('Correct! +10 points', 'success');
+            // Don't show notification to avoid interference
         } else {
+            // Only show error notification and stop game
             window.monadPlayhouse.showNotification(`Wrong! The answer was ${this.currentProblem.answer}`, 'error');
             this.stop();
         }
