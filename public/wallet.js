@@ -50,11 +50,51 @@ class MonadWallet {
             this.config = await response.json();
         } catch (error) {
             console.error('Failed to load config:', error);
-            // Fallback config
+            // Fallback config (updated to be complete)
             this.config = {
                 contractAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
+                networkId: '0x279f', // Added
+                chainId: '0x279f',   // Added
+                chainName: 'Monad Testnet', // Added
+                rpcUrl: 'https://testnet-rpc.monad.xyz', // Updated
+                explorerUrl: 'https://testnet.monadexplorer.com', // Added
                 entryFee: '0.1',
-                rpcUrl: 'https://rpc.ankr.com/monad_testnet'
+                currency: 'MON',
+                decimals: 18,
+                gameTypes: {
+                    'snake': 1,
+                    'memory': 2,
+                    'math': 3,
+                    'color': 4,
+                    'tetris': 5,
+                    'flappy': 6,
+                    'spelling': 7,
+                    'carRace': 8,
+                    'monadRunner': 9,
+                    'cryptoPuzzle': 10,
+                    'tokenCollector': 11,
+                    'blockchainTetris': 12
+                },
+                rewards: {
+                    'snake': { first: 10, second: 5, third: 2 },
+                    'memory': { first: 8, second: 4, third: 1 },
+                    'math': { first: 6, second: 3, third: 1 },
+                    'color': { first: 5, second: 2, third: 1 },
+                    'tetris': { first: 12, second: 6, third: 3 },
+                    'flappy': { first: 7, second: 3, third: 1 },
+                    'spelling': { first: 9, second: 4, third: 2 },
+                    'carRace': { first: 11, second: 5, third: 2 },
+                    'monadRunner': { first: 15, second: 7, third: 3 },
+                    'cryptoPuzzle': { first: 20, second: 10, third: 5 },
+                    'tokenCollector': { first: 8, second: 4, third: 2 },
+                    'blockchainTetris': { first: 10, second: 5, third: 2 }
+                },
+                validation: {
+                    minScore: 1,
+                    maxScore: 999999,
+                    minPlayerNameLength: 1,
+                    maxPlayerNameLength: 20
+                }
             };
         }
         
@@ -337,7 +377,7 @@ class MonadWallet {
 
             // Ensure we're on the correct network first with automatic switching
             await this.ensureMonadNetwork();
-            
+
             console.log('payEntryFee: Checking if has enough balance...');
             const hasBalance = await this.hasEnoughBalance();
             console.log('payEntryFee: Has enough balance:', hasBalance);
@@ -1053,7 +1093,7 @@ class MonadWallet {
 // Global wallet instance
 window.monadWallet = new MonadWallet();
 
-// Test hex encoding on page load
+// Initialize wallet on page load
 window.addEventListener('load', async () => {
     try {
         // Wait a bit for the wallet to be initialized
@@ -1061,11 +1101,11 @@ window.addEventListener('load', async () => {
         
         // Check if wallet is ready
         if (window.monadWallet && window.monadWallet.config) {
-            await window.monadWallet.testHexEncoding();
+            console.log('Wallet initialized successfully:', window.monadWallet.config);
         } else {
-            console.log('Wallet not ready yet, skipping hex encoding test');
+            console.log('Wallet not ready yet');
         }
     } catch (error) {
-        console.error('Hex encoding test failed:', error);
+        console.error('Wallet initialization failed:', error);
     }
 });
