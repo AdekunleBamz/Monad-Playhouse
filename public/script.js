@@ -503,6 +503,7 @@ class MonadPlayhouse {
         this.gameState = 'playing';
         this.startTime = Date.now();
         this.gameStartTime = Date.now(); // Track actual game start time for duration validation
+        this.scoreSubmissionInProgress = false; // Reset submission flag
         
             console.log('Game state set to playing, starting timer...');
             gameMenu.style.display = 'none';
@@ -1909,6 +1910,14 @@ class MonadPlayhouse {
     // Submit score to leaderboard
     async submitScoreToLeaderboard(gameType) {
         try {
+            // Prevent duplicate submissions
+            if (this.scoreSubmissionInProgress) {
+                console.log('Score submission already in progress, skipping...');
+                return;
+            }
+            
+            this.scoreSubmissionInProgress = true;
+            
             const gameTypeMap = {
                 'snake': 1, 'memory': 2, 'math': 3, 'color': 4,
                 'tetris': 5, 'flappy': 6, 'spelling': 7, 'carRace': 8,
@@ -1920,6 +1929,8 @@ class MonadPlayhouse {
                 // Calculate game duration in seconds
                 const gameDuration = Math.floor((Date.now() - this.gameStartTime) / 1000);
                 
+                console.log('Submitting score with duration:', gameDuration, 'seconds');
+                
                 await window.leaderboardManager.submitScore(
                     blockchainGameType, 
                     this.scores[gameType], 
@@ -1929,6 +1940,8 @@ class MonadPlayhouse {
             }
         } catch (error) {
             console.error('Failed to submit score to leaderboard:', error);
+        } finally {
+            this.scoreSubmissionInProgress = false;
         }
     }
 

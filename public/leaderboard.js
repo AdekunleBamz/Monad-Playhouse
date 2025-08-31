@@ -186,7 +186,8 @@ class LeaderboardManager {
             console.log('Response headers:', response.headers);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const errorData = await response.json().catch(() => ({ error: response.statusText }));
+                throw new Error(`HTTP ${response.status}: ${errorData.error || response.statusText}`);
             }
             
             const result = await response.json();
