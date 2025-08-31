@@ -68,15 +68,13 @@ class MGIDManager {
         try {
             console.log('Starting MGID login...');
             
-            if (!this.privy) {
-                throw new Error('Privy not initialized');
-            }
-
-            await this.privy.login();
+            // MGID temporarily disabled
+            alert('MGID login temporarily disabled. Please use regular wallet connection for now.');
+            console.log('MGID login skipped - using regular wallet');
             
         } catch (error) {
             console.error('MGID login failed:', error);
-            this.showNotification('MGID login failed. Please try again.', 'error');
+            alert('MGID login temporarily unavailable. Please use regular wallet connection.');
         }
     }
 

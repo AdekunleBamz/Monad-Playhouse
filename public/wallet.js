@@ -155,6 +155,14 @@ class MonadWallet {
     async ensureMonadNetwork() {
         try {
             console.log('Ensuring Monad Testnet connection...');
+            
+            // Ensure config is loaded
+            if (!this.config || !this.config.chainId) {
+                console.warn('Config not loaded, using fallback chain ID');
+                this.config = this.config || {};
+                this.config.chainId = '10143';
+            }
+            
             const currentChainId = await this.getChainId();
             const monadChainId = parseInt(this.config.chainId, 10); // Parse as decimal
             
@@ -262,10 +270,10 @@ class MonadWallet {
             console.log('this.wallet:', this.wallet);
             console.log('window.ethereum:', window.ethereum);
             
-            // Re-check wallet availability
-            if (!this.wallet && typeof window.ethereum !== 'undefined') {
+            // Always ensure wallet is set
+            if (typeof window.ethereum !== 'undefined') {
                 this.wallet = window.ethereum;
-                console.log('Re-assigned wallet from window.ethereum');
+                console.log('Wallet assigned from window.ethereum');
             }
             
             if (!this.wallet) {

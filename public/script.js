@@ -115,7 +115,9 @@ class MonadPlayhouse {
             
             // Check if user is authenticated (either wallet or MGID)
             const isWalletConnected = this.wallet && this.wallet.isConnected;
-            const isMGIDAuthenticated = window.mgidManager && window.mgidManager.isMGIDAuthenticated();
+            const isMGIDAuthenticated = window.mgidManager && window.mgidManager.isAuthenticated;
+            
+            console.log('Wallet connected:', isWalletConnected, 'MGID authenticated:', isMGIDAuthenticated);
             
             if (!isWalletConnected && !isMGIDAuthenticated) {
                 this.showNotification('Please connect your wallet or sign in with Monad Games ID to play premium games.', 'info');
