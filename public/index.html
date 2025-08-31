@@ -3,238 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-    <title>Monad Playhouse - Mission 7 Game Jam</title>
+    <title>Monad Playhouse - 12 Blockchain Games</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Privy SDK for Monad Games ID -->
+    <script src="https://unpkg.com/@privy-io/privy-browser@latest/dist/privy-browser.js"></script>
 </head>
 <body>
-    <div class="game-container">
-        <!-- Header Section -->
-        <header class="game-header">
-            <div class="logo-container">
-                <h1 class="main-title">Monad Playhouse</h1>
-                <div class="subtitle">Blockchain Gaming on Monad</div>
-            </div>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">🎮 Monad Playhouse</h1>
             <div class="header-controls">
+                <!-- Existing wallet connect button -->
                 <button id="walletConnect" class="control-btn wallet-btn" title="Connect Wallet">🔗</button>
-        
-                <button id="soundToggle" class="control-btn">🔊</button>
-                <button id="fullscreenToggle" class="control-btn">⛶</button>
-                <button id="paymentToggle" class="control-btn" title="Toggle Payment Requirement">💰</button>
-            </div>
-        </header>
-
-        <!-- Wallet Details Section -->
-        <div id="walletDetails" class="wallet-details" style="display: none;">
-            <div class="wallet-info">
-                <div class="wallet-address">
-                    <span class="label">Address:</span>
-                    <span id="walletAddress" class="value">Not connected</span>
-                </div>
-                <div class="wallet-balance">
-                    <span class="label">Balance:</span>
-                    <span id="walletBalance" class="value">0 MON</span>
-                </div>
-                <div class="deposit-amount">
-                    <span class="label">Entry Fee:</span>
-                    <span id="depositAmount" class="value">0.1 MON</span>
-                </div>
-                <div class="user-deposited">
-                    <span class="label">Total Deposited:</span>
-                    <span id="userDeposited" class="value">0 MON</span>
-                </div>
-                <div class="username-display">
-                    <span class="label">Username:</span>
-                    <span id="usernameDisplay" class="value">Not set</span>
-                </div>
+                <!-- New MGID login button -->
+                <button id="mgidLogin" class="control-btn mgid-btn" title="Sign in with Monad Games ID">🎯</button>
+                <button id="leaderboardBtn" class="control-btn leaderboard-btn" title="Leaderboard">🏆</button>
             </div>
         </div>
+    </header>
 
-        <!-- Game Selection Menu -->
-        <div id="gameMenu" class="game-menu">
-            <div class="menu-title">Choose Your Adventure</div>
-            <div class="game-grid">
-                <div class="game-card" data-game="snake">
-                    <div class="game-icon">🐍</div>
-                    <h3>Snake Adventure</h3>
-                    <p>Classic snake with neon aesthetics</p>
-                    <div class="game-instructions">
-                        <small>💡 Use ARROW KEYS to control the snake</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>High Score: <span id="snakeScore">0</span></span>
-                    </div>
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="games-grid">
+            <!-- Game Cards -->
+            <div class="game-card" data-game="snake">
+                <h3>🐍 Snake</h3>
+                <p>Classic snake game with blockchain rewards</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Use arrow keys to control the snake. Eat food to grow longer. Avoid hitting walls or yourself!
                 </div>
-                <div class="game-card" data-game="memory">
-                    <div class="game-icon">🧠</div>
-                    <h3>Memory Master</h3>
-                    <p>Test your memory with beautiful cards</p>
-                    <div class="game-instructions">
-                        <small>💡 Click cards to match pairs</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Best Time: <span id="memoryTime">--</span></span>
-                    </div>
+                <button class="play-btn" data-game="snake">Play Free</button>
+                <button class="play-premium-btn" data-game="snake">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="memory">
+                <h3>🧠 Memory</h3>
+                <p>Test your memory with card matching</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Click cards to flip them. Find matching pairs. Remember card positions to complete the game quickly!
                 </div>
-                <div class="game-card" data-game="math">
-                    <div class="game-icon">🔢</div>
-                    <h3>Math Challenge</h3>
-                    <p>Fast-paced mathematical challenges</p>
-                    <div class="game-instructions">
-                        <small>💡 Type answer and press ENTER</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Level: <span id="mathLevel">1</span></span>
-                    </div>
+                <button class="play-btn" data-game="memory">Play Free</button>
+                <button class="play-premium-btn" data-game="memory">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="math">
+                <h3>🔢 Math</h3>
+                <p>Solve math problems for rewards</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Solve math equations as quickly as possible. Type your answer and press Enter. Speed and accuracy matter!
                 </div>
-                <div class="game-card" data-game="color">
-                    <div class="game-icon">🎨</div>
-                    <h3>Color Rush</h3>
-                    <p>Match colors in this exciting rush</p>
-                    <div class="game-instructions">
-                        <small>💡 Click the matching color</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Score: <span id="colorScore">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="math">Play Free</button>
+                <button class="play-premium-btn" data-game="math">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="color">
+                <h3>🎨 Color</h3>
+                <p>Match colors in sequence</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Watch the color sequence and repeat it by clicking the colored buttons in the same order!
                 </div>
-                <div class="game-card" data-game="tetris">
-                    <div class="game-icon">🧩</div>
-                    <h3>Tetris Blocks</h3>
-                    <p>Classic block stacking with neon glow</p>
-                    <div class="game-instructions">
-                        <small>💡 ARROW KEYS to move, SPACE to rotate</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Lines: <span id="tetrisLines">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="color">Play Free</button>
+                <button class="play-premium-btn" data-game="color">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="tetris">
+                <h3>🧩 Tetris</h3>
+                <p>Classic block stacking game</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Use arrow keys to move and rotate blocks. Complete horizontal lines to clear them. Don't let blocks reach the top!
                 </div>
-                <div class="game-card" data-game="flappy">
-                    <div class="game-icon">🐦</div>
-                    <h3>Flappy Bird</h3>
-                    <p>Navigate through neon pipes</p>
-                    <div class="game-instructions">
-                        <small>💡 Click or press SPACE to flap</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Score: <span id="flappyScore">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="tetris">Play Free</button>
+                <button class="play-premium-btn" data-game="tetris">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="flappy">
+                <h3>🐦 Flappy Bird</h3>
+                <p>Navigate through obstacles</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Click or press space to make the bird flap. Navigate through pipes without hitting them. Go as far as possible!
                 </div>
-                <div class="game-card" data-game="spelling">
-                    <div class="game-icon">📝</div>
-                    <h3>Spelling Bee</h3>
-                    <p>Test your spelling skills</p>
-                    <div class="game-instructions">
-                        <small>💡 Fill missing letters and press ENTER</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Words: <span id="spellingWords">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="flappy">Play Free</button>
+                <button class="play-premium-btn" data-game="flappy">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="spelling">
+                <h3>📝 Spelling</h3>
+                <p>Spell words correctly for points</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Listen to the word and type it correctly. Pay attention to spelling and capitalization!
                 </div>
-                <div class="game-card" data-game="carRace">
-                    <div class="game-icon">🏎️</div>
-                    <h3>Car Race</h3>
-                    <p>Speed through neon tracks</p>
-                    <div class="game-instructions">
-                        <small>💡 ARROW KEYS to control the car</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Laps: <span id="carRaceLaps">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="spelling">Play Free</button>
+                <button class="play-premium-btn" data-game="spelling">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="carRace">
+                <h3>🏎️ Car Race</h3>
+                <p>Race against time and obstacles</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Use arrow keys to control your car. Avoid obstacles and collect power-ups. Reach the finish line as quickly as possible!
                 </div>
-                <div class="game-card" data-game="monadRunner">
-                    <div class="game-icon">🏃</div>
-                    <h3>Monad Runner</h3>
-                    <p>Endless runner with blockchain obstacles</p>
-                    <div class="game-instructions">
-                        <small>💡 Press SPACE to jump over obstacles</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Distance: <span id="monadRunnerDistance">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="carRace">Play Free</button>
+                <button class="play-premium-btn" data-game="carRace">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="monadRunner">
+                <h3>🏃 Monad Runner</h3>
+                <p>Endless runner with blockchain elements</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Jump over obstacles and collect tokens. Use spacebar to jump. The longer you run, the higher your score!
                 </div>
-                <div class="game-card" data-game="cryptoPuzzle">
-                    <div class="game-icon">🧩</div>
-                    <h3>Crypto Puzzle</h3>
-                    <p>Blockchain-themed puzzle game</p>
-                    <div class="game-instructions">
-                        <small>💡 Click puzzle pieces to solve them</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Level: <span id="cryptoPuzzleLevel">1</span></span>
-                    </div>
+                <button class="play-btn" data-game="monadRunner">Play Free</button>
+                <button class="play-premium-btn" data-game="monadRunner">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="cryptoPuzzle">
+                <h3>🔐 Crypto Puzzle</h3>
+                <p>Solve cryptographic challenges</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Decode messages and solve puzzles. Use hints wisely. Each puzzle gets more challenging!
                 </div>
-                <div class="game-card" data-game="tokenCollector">
-                    <div class="game-icon">🪙</div>
-                    <h3>Token Collector</h3>
-                    <p>Collect different token types</p>
-                    <div class="game-instructions">
-                        <small>💡 Use ARROW KEYS to move and collect tokens</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Tokens: <span id="tokenCollectorTokens">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="cryptoPuzzle">Play Free</button>
+                <button class="play-premium-btn" data-game="cryptoPuzzle">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="tokenCollector">
+                <h3>🪙 Token Collector</h3>
+                <p>Collect tokens while avoiding enemies</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Move around to collect tokens. Avoid enemies that chase you. Collect as many tokens as possible!
                 </div>
-                <div class="game-card" data-game="blockchainTetris">
-                    <div class="game-icon">🔗</div>
-                    <h3>Blockchain Tetris</h3>
-                    <p>Tetris with smart contract blocks</p>
-                    <div class="game-instructions">
-                        <small>💡 ARROW KEYS to move, SPACE to rotate</small>
-                    </div>
-                    <div class="game-stats">
-                        <span>Lines: <span id="blockchainTetrisLines">0</span></span>
-                    </div>
+                <button class="play-btn" data-game="tokenCollector">Play Free</button>
+                <button class="play-premium-btn" data-game="tokenCollector">Play Premium</button>
+            </div>
+
+            <div class="game-card" data-game="blockchainTetris">
+                <h3>⛓️ Blockchain Tetris</h3>
+                <p>Tetris with blockchain mechanics</p>
+                <div class="game-instructions">
+                    <strong>How to play:</strong> Classic Tetris with blockchain elements. Clear lines to mine blocks. Chain reactions give bonus points!
                 </div>
+                <button class="play-btn" data-game="blockchainTetris">Play Free</button>
+                <button class="play-premium-btn" data-game="blockchainTetris">Play Premium</button>
             </div>
         </div>
+    </main>
 
-        <!-- Game Canvas Container -->
-        <div id="gameCanvas" class="game-canvas-container" style="display: none;">
-            <div class="game-header-bar">
-                <button id="backToMenu" class="back-btn">← Back to Menu</button>
-                <div class="game-info">
-                    <span id="currentGameName">Game</span>
-                    <span id="gameTimer">Time: 00:00</span>
-                </div>
-                <div class="game-controls">
-                    <button id="pauseGame" class="control-btn">⏸️</button>
-                    <button id="restartGame" class="control-btn">🔄</button>
-                </div>
-            </div>
-            <canvas id="gameCanvasElement" width="800" height="600"></canvas>
-            <div class="game-overlay" id="gameOverlay" style="display: none;">
-                <div class="overlay-content">
-                    <h2 id="overlayTitle">Game Over</h2>
-                    <p id="overlayMessage">Your score: <span id="overlayScore">0</span></p>
-                    <div class="overlay-buttons">
-                        <button id="playAgain" class="btn-primary">Play Again (0.1 MON)</button>
-                        <button id="backToMain" class="btn-secondary">Main Menu</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- Footer -->
+    <footer class="footer">
+        <p>Built with Love by BamzzStudio on Monad for Monad Mission 7</p>
+    </footer>
 
-        <!-- Loading Screen -->
-        <div id="loadingScreen" class="loading-screen">
-            <div class="loading-content">
-                <div class="loading-spinner"></div>
-                <h2>Loading Monad Playhouse...</h2>
-                <p>Preparing your gaming experience</p>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <footer class="game-footer">
-            <p>Built with ❤️ by <strong>BamzzStudio</strong> for <strong>Monad Mission 7</strong></p>
-        </footer>
-    </div>
-
-            <script src="wallet.js?v=28"></script>
-            <script src="wallet-manager.js?v=28"></script>
-            <script src="leaderboard.js?v=28"></script>
+    <!-- Scripts -->
+    <script src="mgid-manager.js?v=1"></script>
+    <script src="wallet.js?v=28"></script>
+    <script src="wallet-manager.js?v=28"></script>
+    <script src="leaderboard.js?v=28"></script>
     <script src="payment.js?v=25"></script>
-            <script src="script.js?v=28"></script>
+    <script src="script.js?v=28"></script>
 </body>
 </html>
