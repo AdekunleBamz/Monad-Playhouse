@@ -42,12 +42,8 @@ async function connectToMongoDB() {
     try {
         console.log('🔌 Connecting to MongoDB...');
         const client = new MongoClient(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            ssl: true,
-            tlsAllowInvalidCertificates: true,
             serverSelectionTimeoutMS: 30000,
-            socketTimeoutMS: 45000,
+            socketTimeoutMS: 45000
         });
         await client.connect();
         db = client.db();
