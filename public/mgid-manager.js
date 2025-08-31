@@ -43,16 +43,13 @@ class MGIDManager {
                 return;
             }
             
-            // Initialize Privy with proper MGID configuration
+            // Initialize Privy with correct MGID configuration
             this.privy = new Privy({
                 appId: 'clx8euall0037le0my79qpz42', // Your Privy App ID
                 config: {
-                    loginMethodsAndOrder: {
-                        primary: ['privy:clx8euall0037le0my79qpz42'], // Monad Games ID
-                        secondary: ['email', 'google']
-                    },
+                    loginMethodsAndOrder: ['privy:cmd8euall0037le0my79qpz42'], // Monad Games ID Cross App ID
                     crossAppAccount: {
-                        providerAppId: this.crossAppId
+                        providerAppId: 'cmd8euall0037le0my79qpz42' // Monad Games ID Cross App ID
                     }
                 }
             });
@@ -123,10 +120,8 @@ class MGIDManager {
             // Show loading state
             this.showNotification('Connecting to Monad Games ID...', 'info');
             
-            // Use cross-app account login for Monad Games ID
-            await this.privy.loginWithCrossAppAccount({
-                appId: 'clx8euall0037le0my79qpz42' // Monad Games ID provider app ID
-            });
+            // Use the standard login method (not cross-app account)
+            await this.privy.login();
             
             console.log('MGID login successful');
             
@@ -156,7 +151,7 @@ class MGIDManager {
             
             console.log('MGID user:', user);
             
-            // Get MGID wallet address
+            // Get MGID wallet address using the official method
             await this.getMGIDWallet();
             
             // Get MGID username
@@ -164,6 +159,7 @@ class MGIDManager {
             
             // Update UI
             this.updateUI();
+            this.updateLoginButton();
             
             this.showNotification('Successfully signed in with Monad Games ID!', 'success');
             
@@ -188,14 +184,14 @@ class MGIDManager {
                 throw new Error('No linked accounts found');
             }
 
-            // Find Monad Games ID cross app account
+            // Find Monad Games ID cross app account using the official Cross App ID
             const crossAppAccount = this.user.linkedAccounts.find(account => 
                 account.type === 'cross_app' && 
-                account.providerApp.id === this.crossAppId
+                account.providerApp.id === 'cmd8euall0037le0my79qpz42'
             );
 
             if (!crossAppAccount || !crossAppAccount.embeddedWallets.length) {
-                throw new Error('No MGID wallet found');
+                throw new Error('No MGID wallet found. Please link your Monad Games ID account.');
             }
 
             this.mgidWallet = crossAppAccount.embeddedWallets[0].address;
@@ -257,24 +253,31 @@ class MGIDManager {
                 throw new Error('No MGID wallet available');
             }
 
-            console.log(`Submitting score to MGID: Game ${gameType}, Score ${score}, Transactions ${transactionCount}`);
+            console.log('Submitting score to MGID contract:', { gameType, score, transactionCount });
 
-            // This would typically be done server-side to prevent cheating
-            // For now, we'll simulate the submission
+            // MGID Contract Address: 0xceCBFF203C8B6044F52CE23D914A1bfD997541A4
+            const contractAddress = '0xceCBFF203C8B6044F52CE23D914A1bfD997541A4';
+            
+            // Prepare data for onchain submission using updatePlayerData function
             const submissionData = {
                 player: this.mgidWallet,
                 scoreAmount: score,
                 transactionAmount: transactionCount,
+                contractAddress: contractAddress,
                 gameType: gameType,
                 timestamp: Date.now()
             };
-
-            console.log('MGID submission data:', submissionData);
-
-            // In a real implementation, this would call the smart contract
-            // await this.callMGIDContract('updatePlayerData', [this.mgidWallet, score, transactionCount]);
-
-            this.showNotification(`Score submitted to Monad Games ID!`, 'success');
+            
+            console.log('Score submission data:', submissionData);
+            
+            // TODO: Send to server for onchain submission to prevent hacking
+            // await fetch('/api/submit-mgid-score', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(submissionData)
+            // });
+            
+            this.showNotification(`Score prepared for MGID submission!`, 'success');
             
             return true;
             

@@ -160,6 +160,12 @@ class LeaderboardManager {
         console.log('API Base URL:', this.apiBaseUrl);
         
         try {
+            // First, submit to MGID if available
+            if (window.mgidManager && window.mgidManager.isAuthenticated) {
+                console.log('Submitting to MGID...');
+                await window.mgidManager.submitScoreToMGID(gameType, score, 1);
+            }
+            
             // Get player address from wallet
             const playerAddress = window.monadWallet?.account || 'unknown';
             
