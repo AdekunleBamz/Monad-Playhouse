@@ -18,7 +18,7 @@ class MGIDManager {
             console.log('Initializing MGID Manager...');
             
             // Initialize Privy
-            this.privy = new window.Privy({
+            this.privy = new Privy({
                 appId: 'clx8euall0037le0my79qpz42', // Your Privy App ID
                 config: {
                     loginMethodsAndOrder: ['cross_app'],
