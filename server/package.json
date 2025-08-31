@@ -1,28 +1,22 @@
 {
   "name": "monad-playhouse-leaderboard",
   "version": "1.0.0",
-  "description": "Online leaderboard server for Monad Playhouse games",
-  "main": "leaderboard-server.js",
+  "description": "Monad Playhouse Global Leaderboard API",
+  "main": "leaderboard-server-mongodb.js",
   "scripts": {
-    "start": "node leaderboard-server.js",
-    "dev": "nodemon leaderboard-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node leaderboard-server-mongodb.js",
+    "dev": "node leaderboard-server-simple.js"
   },
-  "keywords": [
-    "leaderboard",
-    "gaming",
-    "monad",
-    "blockchain"
-  ],
-  "author": "Bakhryaan",
-  "license": "MIT",
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.1",
     "express": "^4.18.2",
-    "mongodb": "^6.19.0"
+    "cors": "^2.8.5",
+    "mongodb": "^6.3.0",
+    "dotenv": "^16.3.1"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
-  }
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["monad", "playhouse", "leaderboard", "api", "mongodb"],
+  "author": "BamzzStudio",
+  "license": "MIT"
 }

@@ -10,7 +10,7 @@ class LeaderboardManager {
         // Use production backend URL when not on localhost
         this.apiBaseUrl = window.location.hostname === 'localhost' 
             ? 'http://localhost:3001/api' 
-            : 'https://monad-playhouse-backend.onrender.com/api';
+            : 'https://monad-playhouse-leaderboard.onrender.com/api';
     }
 
     // Initialize leaderboard system
