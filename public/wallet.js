@@ -59,8 +59,8 @@ class MonadWallet {
             // Fallback config (updated to be complete)
             this.config = {
                 contractAddress: '0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6',
-                networkId: '0x279f', // Added
-                chainId: '0x279f',   // Added
+                networkId: '10143', // Fixed: decimal chain ID
+                chainId: '10143',   // Fixed: decimal chain ID
                 chainName: 'Monad Testnet', // Added
                 rpcUrl: 'https://testnet-rpc.monad.xyz', // Updated
                 explorerUrl: 'https://testnet.monadexplorer.com', // Added
@@ -108,7 +108,7 @@ class MonadWallet {
         // Ensure critical fields are present
         if (!this.config.chainId) {
             console.error('chainId missing from config, setting fallback');
-            this.config.chainId = '0x279f';
+            this.config.chainId = '10143';
         }
         if (!this.config.chainName) {
             this.config.chainName = 'Monad Testnet';
@@ -156,7 +156,7 @@ class MonadWallet {
         try {
             console.log('Ensuring Monad Testnet connection...');
             const currentChainId = await this.getChainId();
-            const monadChainId = parseInt(this.config.chainId, 16);
+            const monadChainId = parseInt(this.config.chainId, 10); // Parse as decimal
             
             console.log('Current chain ID:', currentChainId, 'Monad chain ID:', monadChainId, 'Config chainId:', this.config.chainId);
             
@@ -185,9 +185,10 @@ class MonadWallet {
     // Switch to Monad Testnet
     async switchToMonadNetwork() {
         try {
-            // Try to switch to the network
-            const chainIdHex = this.config.chainId;
-            console.log('Attempting to switch to chainId:', chainIdHex);
+            // Convert decimal chain ID to hex for wallet request
+            const chainIdDecimal = parseInt(this.config.chainId, 10);
+            const chainIdHex = '0x' + chainIdDecimal.toString(16);
+            console.log('Attempting to switch to chainId:', chainIdHex, '(decimal:', chainIdDecimal, ')');
             
             await this.wallet.request({
                 method: 'wallet_switchEthereumChain',
@@ -222,7 +223,9 @@ class MonadWallet {
     // Add Monad Testnet to wallet
     async addMonadNetwork() {
         try {
-            const chainIdHex = this.config.chainId;
+            // Convert decimal chain ID to hex for wallet request
+            const chainIdDecimal = parseInt(this.config.chainId, 10);
+            const chainIdHex = '0x' + chainIdDecimal.toString(16);
             await this.wallet.request({
                 method: 'wallet_addEthereumChain',
                 params: [{
@@ -287,7 +290,7 @@ class MonadWallet {
             this.account = accounts[0];
             this.isConnected = true;
             console.log('Wallet connected successfully:', this.account);
-            console.log('Current network config:', this.config.network);
+            console.log('Current network config:', this.config);
             return true;
         } catch (error) {
             console.error('Wallet connection failed:', error);
@@ -325,7 +328,7 @@ class MonadWallet {
 
             // Check current network first
             const currentChainId = await this.getChainId();
-            console.log('Current network chainId:', currentChainId, 'Expected:', parseInt(this.config.chainId, 16));
+            console.log('Current network chainId:', currentChainId, 'Expected:', parseInt(this.config.chainId, 10));
 
             const balance = await this.wallet.request({
                 method: 'eth_getBalance',
@@ -373,7 +376,7 @@ class MonadWallet {
         try {
             // Check if we're on the correct network
             const currentChainId = await this.getChainId();
-            const expectedChainId = parseInt(this.config.chainId || '0x279f', 16);
+            const expectedChainId = parseInt(this.config.chainId || '10143', 10);
             
             if (currentChainId !== expectedChainId) {
                 console.warn('⚠️ Wrong network detected! Current:', currentChainId, 'Expected:', expectedChainId);

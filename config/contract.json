@@ -1,7 +1,7 @@
 {
   "contractAddress": "0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-  "networkId": "0x279f",
-  "chainId": "0x279f",
+  "networkId": "10143",
+  "chainId": "10143",
   "chainName": "Monad Testnet",
   "rpcUrl": "https://testnet-rpc.monad.xyz",
   "explorerUrl": "https://testnet.monadexplorer.com",
