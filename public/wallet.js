@@ -256,6 +256,14 @@ class MonadWallet {
     async connect() {
         try {
             console.log('Attempting to connect wallet...');
+            console.log('this.wallet:', this.wallet);
+            console.log('window.ethereum:', window.ethereum);
+            
+            // Re-check wallet availability
+            if (!this.wallet && typeof window.ethereum !== 'undefined') {
+                this.wallet = window.ethereum;
+                console.log('Re-assigned wallet from window.ethereum');
+            }
             
             if (!this.wallet) {
                 throw new Error('No wallet available. Please install MetaMask or compatible wallet.');

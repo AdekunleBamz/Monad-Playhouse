@@ -50,7 +50,7 @@ class MonadPlayhouse {
 
     initSounds() {
         try {
-            this.sounds = {
+        this.sounds = {
                 click: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
                 success: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
                 gameOver: new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT'),
@@ -172,16 +172,16 @@ class MonadPlayhouse {
         const canvasContainer = document.createElement('div');
         canvasContainer.id = 'gameCanvas';
         canvasContainer.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
+                align-items: center;
+                justify-content: center;
             z-index: 1000;
         `;
 
@@ -191,7 +191,7 @@ class MonadPlayhouse {
         this.gameCanvas.height = 600;
         this.gameCanvas.style.cssText = `
             border: 3px solid #00ff88;
-            border-radius: 15px;
+                border-radius: 15px;
             box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
             background: #000;
         `;
@@ -211,10 +211,10 @@ class MonadPlayhouse {
             border: 2px solid #ff6b9d;
             color: #ff6b9d;
             padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
+                border-radius: 25px;
+                cursor: pointer;
             font-size: 14px;
-            transition: all 0.3s ease;
+                transition: all 0.3s ease;
         `;
         backBtn.addEventListener('click', () => this.endGame());
 
@@ -226,7 +226,7 @@ class MonadPlayhouse {
             color: #00ff88;
             padding: 10px 20px;
             border-radius: 25px;
-            cursor: pointer;
+                cursor: pointer;
             font-size: 14px;
             transition: all 0.3s ease;
         `;
@@ -425,7 +425,7 @@ class MonadPlayhouse {
         
         document.body.appendChild(notification);
         
-        setTimeout(() => {
+                            setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
@@ -638,7 +638,7 @@ class MemoryGame {
             if (this.matchedPairs === 8) {
                 this.stop();
             }
-        } else {
+                        } else {
             card1.flipped = false;
             card2.flipped = false;
         }
@@ -680,7 +680,7 @@ class MemoryGame {
                 this.context.font = '40px Arial';
                 this.context.textAlign = 'center';
                 this.context.fillText(card.symbol, x + cardWidth/2 - 5, y + cardHeight/2 + 15);
-            } else {
+        } else {
                 this.context.fillStyle = '#fff';
                 this.context.font = '40px Arial';
                 this.context.textAlign = 'center';
@@ -868,7 +868,7 @@ class ColorGame {
             }
         });
     }
-    
+
     getColorIndex(x, y) {
         const centerX = this.canvas.width / 2;
         const centerY = this.canvas.height / 2;

@@ -9,6 +9,8 @@ class MGIDManager {
         this.mgidUsername = null;
         this.crossAppId = 'cmd8euall0037le0my79qpz42';
         this.gameContractAddress = '0xceCBFF203C8B6044F52CE23D914A1bfD997541A4';
+        this.initializing = false;
+        this.retryAttempted = false;
         
         this.init();
     }
@@ -17,38 +19,27 @@ class MGIDManager {
         try {
             console.log('Initializing MGID Manager...');
             
-            // Check if Privy is available
-            if (typeof Privy === 'undefined') {
-                console.warn('Privy SDK not loaded, waiting for it...');
-                // Wait a bit and try again
-                setTimeout(() => this.init(), 1000);
+            // Prevent multiple initialization attempts
+            if (this.initializing) {
+                console.log('MGID Manager already initializing, skipping...');
                 return;
             }
             
-            // Initialize Privy
-            this.privy = new Privy({
-                appId: 'clx8euall0037le0my79qpz42', // Your Privy App ID
-                config: {
-                    loginMethodsAndOrder: ['cross_app'],
-                    crossAppAccount: {
-                        providerAppId: this.crossAppId
-                    }
-                }
-            });
-
-            // Set up event listeners
+            this.initializing = true;
+            
+            // TEMPORARILY DISABLED: Privy SDK integration
+            console.log('MGID temporarily disabled - focusing on core wallet functionality');
+            this.isInitialized = true;
+            this.initializing = false;
+            
+            // Set up basic event listeners
             this.setupEventListeners();
             
-            this.isInitialized = true;
-            console.log('MGID Manager initialized successfully');
-            
-            // Update UI
-            this.updateUI();
+            console.log('MGID Manager initialized (basic mode)');
             
         } catch (error) {
             console.error('Failed to initialize MGID Manager:', error);
-            // Retry after a delay
-            setTimeout(() => this.init(), 2000);
+            this.initializing = false;
         }
     }
 
