@@ -25,9 +25,9 @@ if [ ! -f "server/package.json" ]; then
     exit 1
 fi
 
-# Check if MongoDB server file exists
-if [ ! -f "server/leaderboard-server-mongodb.js" ]; then
-    echo "❌ Error: MongoDB server file not found"
+# Check if MGID server file exists
+if [ ! -f "server/mgid-leaderboard-server.js" ]; then
+    echo "❌ Error: MGID leaderboard server file not found"
     exit 1
 fi
 
