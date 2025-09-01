@@ -9,18 +9,35 @@ class MGIDIntegration {
     }
 
     setupEventListeners() {
-        document.addEventListener('DOMContentLoaded', () => {
+        const setupListeners = () => {
             const connectBtn = document.getElementById('connectWallet');
             const logoutBtn = document.getElementById('logoutBtn');
             
+            console.log('🔗 Setting up MGID event listeners');
+            console.log('connectBtn found:', !!connectBtn);
+            console.log('logoutBtn found:', !!logoutBtn);
+            
             if (connectBtn) {
-                connectBtn.addEventListener('click', () => this.showUsernamePrompt());
+                console.log('✅ Adding click listener to connectWallet button');
+                connectBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    console.log('🎮 Connect button clicked - showing username prompt');
+                    this.showUsernamePrompt();
+                });
+            } else {
+                console.error('❌ connectWallet button not found!');
             }
             
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => this.logout());
             }
-        });
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupListeners);
+        } else {
+            setupListeners();
+        }
     }
 
     showUsernamePrompt() {
@@ -126,21 +143,42 @@ class MGIDIntegration {
         try {
             console.log('🔗 Connecting with MGID username:', username);
             
-            // Simulate connection process
+            // First get wallet address
+            const walletAddress = await this.getWalletAddress();
+            if (!walletAddress) {
+                this.showError('Please connect your wallet first!');
+                return;
+            }
+
+            // Store the entered username temporarily
             this.mgidUsername = username;
-            this.isConnected = true;
             this.userInfo = {
                 username: username,
                 displayName: username,
-                wallet: await this.getWalletAddress()
+                wallet: walletAddress
             };
 
-            console.log('✅ MGID connection successful:', this.userInfo);
-            this.updateUI();
-            this.showSuccessMessage(`Welcome ${username}! Connected to MGID.`);
+            console.log('🔍 Verifying MGID registration...');
             
-            // Optional: Verify with MGID API
-            await this.verifyMGIDConnection(username);
+            // Verify with MGID API
+            const isVerified = await this.verifyMGIDConnection(username);
+            
+            if (isVerified) {
+                this.isConnected = true;
+                console.log('✅ MGID connection successful:', this.userInfo);
+                this.updateUI();
+                this.showSuccessMessage(`Welcome ${this.mgidUsername}! Connected to MGID.`);
+            } else {
+                // Wallet not registered, guide user to register
+                this.isConnected = false;
+                this.showError(`Wallet ${walletAddress.slice(0,6)}...${walletAddress.slice(-4)} is not registered on MGID. Please register first!`);
+                
+                // Offer to open registration
+                const shouldRegister = confirm('Would you like to go to MGID to register this wallet?');
+                if (shouldRegister) {
+                    window.open('https://monad-games-id-site.vercel.app/', '_blank');
+                }
+            }
             
         } catch (error) {
             console.error('❌ MGID connection failed:', error);
@@ -164,16 +202,38 @@ class MGIDIntegration {
 
     async verifyMGIDConnection(username) {
         try {
-            // Try to verify the username exists on MGID
-            const response = await fetch(`https://monad-games-id-site.vercel.app/api/users/${username}`);
+            // Get wallet address first
+            const walletAddress = await this.getWalletAddress();
+            if (!walletAddress) {
+                console.log('⚠️ No wallet connected - cannot verify MGID');
+                return false;
+            }
+
+            console.log('🔍 Verifying MGID with wallet:', walletAddress);
+            
+            // Use correct endpoint: /api/check-wallet?wallet={walletAddress}
+            const response = await fetch(`https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${walletAddress}`);
             if (response.ok) {
                 const data = await response.json();
-                console.log('✅ MGID username verified:', data);
+                console.log('✅ MGID API response:', data);
+                
+                if (data.hasUsername && data.user && data.user.username) {
+                    console.log('✅ MGID username verified:', data.user.username);
+                    // Update our stored username to match what's actually registered
+                    this.mgidUsername = data.user.username;
+                    this.userInfo.username = data.user.username;
+                    return true;
+                } else {
+                    console.log('⚠️ Wallet not registered on MGID - user needs to register');
+                    return false;
+                }
             } else {
-                console.log('⚠️ Username not found on MGID - user may need to register');
+                console.log('⚠️ MGID API request failed:', response.status);
+                return false;
             }
         } catch (error) {
-            console.log('ℹ️ Could not verify MGID username (API may be unavailable)');
+            console.log('ℹ️ Could not verify MGID username (API may be unavailable):', error);
+            return false;
         }
     }
 
@@ -314,6 +374,13 @@ class MGIDIntegration {
 }
 
 // Initialize MGID Integration
-document.addEventListener('DOMContentLoaded', () => {
+const initMGID = () => {
+    console.log('🚀 Initializing MGID Integration...');
     window.mgidIntegration = new MGIDIntegration();
-});
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMGID);
+} else {
+    initMGID();
+}

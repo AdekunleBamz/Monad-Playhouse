@@ -84,9 +84,10 @@ class PaymentGateway {
                             <span class="fee-amount">${this.config?.entryFee || '0.1'} ${this.config?.currency || 'MON'}</span>
                         </div>
                         <div class="player-name-input">
-                            <label for="playerName">Player Name:</label>
-                            <input type="text" id="playerName" placeholder="Enter your name" maxlength="20" readonly>
-                            <small>💡 Name is saved from wallet connection</small>
+                            <label for="playerName">MGID Username:</label>
+                            <input type="text" id="playerName" placeholder="Your MGID username will appear here" maxlength="20" readonly>
+                            <small>💡 Connect with MGID to play games</small>
+                            <button id="connectMGIDBtn" class="mgid-connect-btn" style="margin-top: 10px;">🎮 Connect with MGID</button>
                         </div>
                     </div>
                     
@@ -396,6 +397,22 @@ class PaymentGateway {
                 });
             }
 
+            // Connect MGID
+            const connectMGIDBtn = document.getElementById('connectMGIDBtn');
+            if (connectMGIDBtn) {
+                connectMGIDBtn.addEventListener('click', () => {
+                    console.log('Connecting to MGID...');
+                    if (window.mgidIntegration) {
+                        window.mgidIntegration.showUsernamePrompt();
+                        // Update UI after MGID connection
+                        setTimeout(() => this.updateWalletStatus(), 1000);
+                    } else {
+                        console.error('MGID integration not available');
+                        alert('MGID system not available. Please refresh the page.');
+                    }
+                });
+            }
+
             // Pay entry fee
             const payBtn = document.getElementById('payEntryFee');
             if (payBtn) {
@@ -509,13 +526,29 @@ class PaymentGateway {
                 balanceElement.className = 'status-value connected';
             }
             
-            // Load saved username
-            const savedUsername = localStorage.getItem('monadPlayhouseUsername');
-            if (savedUsername && playerNameInput) {
-                this.playerName = savedUsername;
-                playerNameInput.value = savedUsername;
-                this.updatePayButton();
+            // Check MGID connection for username
+            if (window.mgidIntegration && window.mgidIntegration.isUserAuthenticated()) {
+                const userInfo = window.mgidIntegration.getUserInfo();
+                if (userInfo && userInfo.username && playerNameInput) {
+                    this.playerName = userInfo.username;
+                    playerNameInput.value = userInfo.username;
+                    
+                    // Update MGID button state
+                    const connectMGIDBtn = document.getElementById('connectMGIDBtn');
+                    if (connectMGIDBtn) {
+                        connectMGIDBtn.textContent = '✅ MGID Connected';
+                        connectMGIDBtn.disabled = true;
+                    }
+                }
+            } else {
+                // Load saved username as fallback
+                const savedUsername = localStorage.getItem('monadPlayhouseUsername');
+                if (savedUsername && playerNameInput) {
+                    this.playerName = savedUsername;
+                    playerNameInput.value = savedUsername;
+                }
             }
+            this.updatePayButton();
         } else {
             connectedElement.textContent = 'Not Connected';
             connectedElement.className = 'status-value';
@@ -526,6 +559,13 @@ class PaymentGateway {
             if (playerNameInput) {
                 playerNameInput.value = '';
                 this.playerName = '';
+            }
+            
+            // Reset MGID button state
+            const connectMGIDBtn = document.getElementById('connectMGIDBtn');
+            if (connectMGIDBtn) {
+                connectMGIDBtn.textContent = '🎮 Connect with MGID';
+                connectMGIDBtn.disabled = false;
             }
         }
     }
