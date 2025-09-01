@@ -215,11 +215,16 @@ class MonadPlayhouse {
             // Initialize wallet manager
                     console.log('Wallet system ready');
             
-            // Initialize leaderboard with proper timing
-            console.log('Initializing LeaderboardManager...');
-            window.leaderboardManager = new LeaderboardManager();
-            await window.leaderboardManager.init();
-            console.log('LeaderboardManager initialized:', !!window.leaderboardManager);
+            // Initialize MGID leaderboard with proper timing
+            console.log('Initializing MGID Leaderboard...');
+            // The MGIDLeaderboard is initialized automatically in mgid-leaderboard.js
+            // Just wait for it to be available
+            let retryCount = 0;
+            while (!window.leaderboardManager && retryCount < 10) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                retryCount++;
+            }
+            console.log('MGID Leaderboard initialized:', !!window.leaderboardManager);
             
             // Initialize payment gateway
             console.log('Initializing PaymentGateway...');
@@ -1957,7 +1962,7 @@ class MonadPlayhouse {
         this.saveScores();
     }
 
-    // Submit score to leaderboard
+    // Submit score to MGID leaderboard
     async submitScoreToLeaderboard(gameType) {
         try {
             // Prevent duplicate submissions
@@ -1967,6 +1972,13 @@ class MonadPlayhouse {
             }
             
             this.scoreSubmissionInProgress = true;
+            
+            // Check if wallet is connected for MGID integration
+            if (!window.walletMGID || !window.walletMGID.isUserAuthenticated()) {
+                console.log('User not authenticated with wallet, skipping score submission');
+                this.showWalletLoginPrompt();
+                return;
+            }
             
             const gameTypeMap = {
                 'snake': 1, 'memory': 2, 'math': 3, 'color': 4,
@@ -1979,20 +1991,130 @@ class MonadPlayhouse {
                 // Calculate game duration in seconds
                 const gameDuration = Math.floor((Date.now() - this.gameStartTime) / 1000);
                 
-                console.log('Submitting score with duration:', gameDuration, 'seconds');
+                console.log('🎯 Submitting score to MGID:', {
+                    gameType: blockchainGameType,
+                    score: this.scores[gameType],
+                    duration: gameDuration
+                });
                 
-                await window.leaderboardManager.submitScore(
+                const result = await window.walletMGID.submitScore(
                     blockchainGameType, 
                     this.scores[gameType], 
                     this.playerName,
                     gameDuration
                 );
+                
+                if (result.success) {
+                    this.showSuccessMessage('Score submitted to global leaderboard! 🎯');
+                }
             }
         } catch (error) {
-            console.error('Failed to submit score to leaderboard:', error);
+            console.error('Failed to submit score to MGID:', error);
+            this.showErrorMessage('Failed to submit score. Please try again.');
         } finally {
             this.scoreSubmissionInProgress = false;
         }
+    }
+
+    showWalletLoginPrompt() {
+        const notification = document.createElement('div');
+        notification.className = 'mgid-login-prompt';
+        notification.innerHTML = `
+            <div class="mgid-prompt-content">
+                <h4>🎯 Join the Global Leaderboard!</h4>
+                <p>Connect your wallet to submit your score and compete with players from all games via MGID integration.</p>
+                <button onclick="window.walletMGID && window.walletMGID.connectWallet(); this.parentElement.parentElement.remove();" class="mgid-prompt-login">
+                    Connect Wallet
+                </button>
+                <button onclick="this.parentElement.parentElement.remove()" class="mgid-prompt-close">
+                    Maybe Later
+                </button>
+            </div>
+        `;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            z-index: 10002;
+            max-width: 400px;
+            text-align: center;
+            animation: popIn 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+    }
+
+    showSuccessMessage(message) {
+        const notification = document.createElement('div');
+        notification.className = 'success-message';
+        notification.innerHTML = `
+            <div class="success-content">
+                <h4>✅ Success!</h4>
+                <p>${message}</p>
+            </div>
+        `;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10001;
+            max-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    showErrorMessage(message) {
+        const notification = document.createElement('div');
+        notification.className = 'error-message';
+        notification.innerHTML = `
+            <div class="error-content">
+                <h4>❌ Error</h4>
+                <p>${message}</p>
+            </div>
+        `;
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10001;
+            max-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
     }
 
     restartGame() {

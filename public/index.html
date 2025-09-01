@@ -17,9 +17,12 @@
             <div class="login-section">
                 <div id="userInfo" class="user-info" style="display: none;"></div>
                 <div class="login-buttons">
-                    <button id="walletLoginBtn" class="login-btn wallet-btn">🔗 Connect Wallet</button>
-                    <button id="privyLoginBtn" class="login-btn privy-btn">🎯 Sign in with Monad Games ID</button>
-                    <button id="logoutBtn" class="login-btn logout-btn" style="display: none;">🚪 Logout</button>
+                    <button id="connectWallet" class="login-btn wallet-btn">🔗 Connect Wallet</button>
+                    <button id="logoutBtn" class="login-btn logout-btn" style="display: none;">🚪 Disconnect</button>
+                </div>
+                <div class="login-info">
+                    <p class="info-text">🎮 Connect your wallet to play games and compete on the leaderboard!</p>
+                    <p class="info-text">🎯 Your wallet address will be used for MGID integration</p>
                 </div>
             </div>
         </header>
@@ -85,12 +88,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://privy.io/sdk.js"></script>
-    <script src="wallet.js?v=40"></script>
-    <script src="mgid-manager.js?v=40"></script>
-    <script src="hybrid-login.js?v=40"></script>
-    <script src="leaderboard.js?v=40"></script>
-    <script src="payment.js?v=40"></script>
-    <script src="script.js?v=40"></script>
+    <script src="wallet.js?v=43"></script>
+    <script src="wallet-mgid-integration.js?v=43"></script>
+    <script src="mgid-leaderboard.js?v=43"></script>
+    <script src="payment.js?v=43"></script>
+    <script src="script.js?v=43"></script>
 </body>
 </html>

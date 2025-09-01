@@ -1,0 +1,448 @@
+// Wallet-based MGID Integration
+// Works with wallet connection to integrate with MGID system
+
+class WalletMGIDIntegration {
+    constructor() {
+        this.isInitialized = false;
+        this.isAuthenticated = false;
+        this.walletAddress = null;
+        this.mgidUsername = null;
+        this.hasUsername = false;
+        
+        this.init();
+    }
+
+    async init() {
+        try {
+            console.log('🎯 Initializing Wallet-based MGID Integration...');
+            
+            this.setupEventListeners();
+            this.updateUI();
+            
+            this.isInitialized = true;
+            console.log('✅ Wallet MGID Integration initialized');
+            
+        } catch (error) {
+            console.error('❌ Failed to initialize Wallet MGID Integration:', error);
+        }
+    }
+
+    setupEventListeners() {
+        // Connect wallet button
+        const connectBtn = document.getElementById('connectWallet');
+        if (connectBtn) {
+            connectBtn.addEventListener('click', () => this.connectWallet());
+        }
+
+        // Logout button
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => this.disconnect());
+        }
+
+        // Listen for wallet connection events
+        window.addEventListener('walletConnected', (event) => {
+            this.handleWalletConnection(event.detail.address);
+        });
+
+        window.addEventListener('walletDisconnected', () => {
+            this.handleWalletDisconnection();
+        });
+    }
+
+    async connectWallet() {
+        try {
+            console.log('🔗 Connecting wallet for MGID integration...');
+            
+            if (!window.monadWallet) {
+                throw new Error('Monad Wallet not available');
+            }
+
+            const success = await window.monadWallet.connect();
+            if (success && window.monadWallet.account) {
+                await this.handleWalletConnection(window.monadWallet.account);
+            } else {
+                throw new Error('Failed to connect wallet');
+            }
+            
+        } catch (error) {
+            console.error('❌ Wallet connection failed:', error);
+            this.showError(error.message || 'Failed to connect wallet');
+        }
+    }
+
+    async handleWalletConnection(address) {
+        try {
+            this.walletAddress = address;
+            this.isAuthenticated = true;
+            
+            console.log('✅ Wallet connected:', address);
+            
+            // Check MGID username
+            await this.fetchMGIDUsername();
+            
+            this.updateUI();
+            this.showSuccess('Wallet connected successfully!');
+            
+            // Show username registration prompt if needed
+            if (!this.hasUsername) {
+                this.showUsernameRegistrationPrompt();
+            }
+            
+        } catch (error) {
+            console.error('❌ Failed to handle wallet connection:', error);
+        }
+    }
+
+    handleWalletDisconnection() {
+        this.walletAddress = null;
+        this.isAuthenticated = false;
+        this.mgidUsername = null;
+        this.hasUsername = false;
+        
+        this.updateUI();
+        console.log('🚪 Wallet disconnected');
+    }
+
+    disconnect() {
+        if (window.monadWallet) {
+            window.monadWallet.disconnect();
+        }
+        this.handleWalletDisconnection();
+    }
+
+    async fetchMGIDUsername() {
+        try {
+            if (!this.walletAddress) return;
+
+            console.log('🔍 Fetching MGID username for:', this.walletAddress);
+            
+            const response = await fetch(`https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress}`);
+            
+            if (!response.ok) {
+                console.warn('Failed to check MGID username - API not available');
+                return;
+            }
+            
+            const data = await response.json();
+
+            if (data.hasUsername && data.user) {
+                this.mgidUsername = data.user.username;
+                this.hasUsername = true;
+                console.log('✅ MGID username found:', this.mgidUsername);
+            } else {
+                console.log('⚠️ No MGID username found - user needs to register');
+                this.mgidUsername = null;
+                this.hasUsername = false;
+            }
+        } catch (error) {
+            console.error('❌ Failed to fetch MGID username:', error);
+            // Don't fail the whole process if MGID API is down
+            this.mgidUsername = null;
+            this.hasUsername = false;
+        }
+    }
+
+    updateUI() {
+        const connectBtn = document.getElementById('connectWallet');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+
+        if (this.isAuthenticated && this.walletAddress) {
+            // Update connect button
+            if (connectBtn) {
+                connectBtn.innerHTML = `🔗 ${this.walletAddress.slice(0, 6)}...${this.walletAddress.slice(-4)}`;
+                connectBtn.style.background = 'linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%)';
+                connectBtn.disabled = true;
+            }
+
+            // Show logout button
+            if (logoutBtn) {
+                logoutBtn.style.display = 'inline-block';
+            }
+
+            // Show user info
+            if (userInfo) {
+                const displayName = this.mgidUsername || `${this.walletAddress.slice(0, 6)}...${this.walletAddress.slice(-4)}`;
+                const mgidStatus = this.hasUsername ? '🎯 MGID User' : '⚠️ No MGID Username';
+                
+                userInfo.innerHTML = `
+                    <div class="wallet-user-info">
+                        <span class="wallet-badge">🔗 Connected</span>
+                        <span class="user-display">${displayName}</span>
+                        <span class="mgid-status">${mgidStatus}</span>
+                    </div>
+                `;
+                userInfo.style.display = 'block';
+            }
+        } else {
+            // Reset to disconnected state
+            if (connectBtn) {
+                connectBtn.innerHTML = '🔗 Connect Wallet';
+                connectBtn.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%)';
+                connectBtn.disabled = false;
+            }
+
+            if (logoutBtn) {
+                logoutBtn.style.display = 'none';
+            }
+
+            if (userInfo) {
+                userInfo.style.display = 'none';
+            }
+        }
+    }
+
+    showUsernameRegistrationPrompt() {
+        const notification = document.createElement('div');
+        notification.className = 'mgid-username-prompt';
+        notification.innerHTML = `
+            <div class="mgid-prompt-content">
+                <h4>🎯 Register Your MGID Username</h4>
+                <p>Register a unique username to appear on the global MGID leaderboard and compete with players from all games!</p>
+                <div class="mgid-prompt-buttons">
+                    <button onclick="window.open('https://monad-games-id-site.vercel.app/', '_blank')" class="mgid-register-btn">
+                        🎯 Register Username
+                    </button>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" class="mgid-close-btn">
+                        Maybe Later
+                    </button>
+                </div>
+            </div>
+        `;
+
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 10000;
+            max-width: 350px;
+            animation: slideInRight 0.4s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 15 seconds
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideOutRight 0.4s ease-in';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 400);
+            }
+        }, 15000);
+    }
+
+    showSuccess(message) {
+        this.showNotification('✅ Success', message, 'success');
+    }
+
+    showError(message) {
+        this.showNotification('❌ Error', message, 'error');
+    }
+
+    showNotification(title, message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `wallet-notification wallet-notification-${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <h4>${title}</h4>
+                <p>${message}</p>
+            </div>
+        `;
+
+        const bgColor = type === 'success' ? '#4ECDC4' : 
+                       type === 'error' ? '#ff6b6b' : '#667eea';
+        
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, ${bgColor} 0%, ${bgColor}dd 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 10001;
+            max-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
+
+    // Score submission method
+    async submitScore(gameType, score, playerName, gameDuration) {
+        try {
+            if (!this.isAuthenticated) {
+                throw new Error('Please connect your wallet first');
+            }
+
+            if (!this.walletAddress) {
+                throw new Error('No wallet address found');
+            }
+
+            const payload = {
+                gameType,
+                score,
+                playerName: this.mgidUsername || playerName || 'Anonymous',
+                gameDuration,
+                playerAddress: this.walletAddress,
+                mgidUsername: this.mgidUsername
+            };
+
+            console.log('🎯 Submitting score via wallet MGID integration:', payload);
+
+            const response = await fetch('/api/submit-score', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to submit score');
+            }
+
+            const result = await response.json();
+            console.log('✅ Score submitted successfully:', result);
+            
+            this.showSuccess('Score submitted to leaderboard! 🎯');
+            return result;
+
+        } catch (error) {
+            console.error('❌ Score submission failed:', error);
+            this.showError(error.message || 'Failed to submit score');
+            throw error;
+        }
+    }
+
+    // Public API methods
+    isUserAuthenticated() {
+        return this.isAuthenticated;
+    }
+
+    getUser() {
+        if (!this.isAuthenticated) return null;
+        
+        return {
+            wallet: this.walletAddress,
+            username: this.mgidUsername,
+            hasUsername: this.hasUsername,
+            type: 'wallet-mgid'
+        };
+    }
+
+    getWalletAddress() {
+        return this.walletAddress;
+    }
+
+    getMGIDUsername() {
+        return this.mgidUsername;
+    }
+
+    hasUsernameRegistered() {
+        return this.hasUsername;
+    }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    window.walletMGID = new WalletMGIDIntegration();
+});
+
+// Add CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .mgid-prompt-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .mgid-register-btn, .mgid-close-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .mgid-register-btn {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        flex: 1;
+    }
+    
+    .mgid-register-btn:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-1px);
+    }
+    
+    .mgid-close-btn {
+        background: rgba(0,0,0,0.2);
+        color: white;
+    }
+    
+    .mgid-close-btn:hover {
+        background: rgba(0,0,0,0.3);
+    }
+    
+    .wallet-user-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 15px;
+        background: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
+        border-radius: 10px;
+        color: white;
+        font-size: 14px;
+    }
+    
+    .wallet-badge {
+        background: rgba(255,255,255,0.2);
+        padding: 4px 8px;
+        border-radius: 5px;
+        font-weight: bold;
+        font-size: 12px;
+    }
+    
+    .user-display {
+        font-weight: bold;
+    }
+    
+    .mgid-status {
+        font-size: 12px;
+        opacity: 0.9;
+    }
+`;
+document.head.appendChild(style);

@@ -1,11 +1,12 @@
 {
   "name": "monad-playhouse-server",
-  "version": "2.0.0",
-  "description": "Monad Playhouse Leaderboard Server with Hybrid Authentication",
-  "main": "leaderboard-server-hybrid.js",
+  "version": "3.0.0",
+  "description": "Monad Playhouse MGID-focused Leaderboard Server",
+  "main": "mgid-leaderboard-server.js",
   "scripts": {
-    "start": "node leaderboard-server-hybrid.js",
-    "dev": "node leaderboard-server-hybrid.js",
+    "start": "node mgid-leaderboard-server.js",
+    "dev": "node mgid-leaderboard-server.js",
+    "hybrid": "node leaderboard-server-hybrid.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
