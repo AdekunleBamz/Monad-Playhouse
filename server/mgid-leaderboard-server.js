@@ -291,51 +291,7 @@ app.post('/api/submit-score', async (req, res) => {
     }
 });
 
-// Get leaderboard
-app.get('/api/leaderboard/:gameType', async (req, res) => {
-    try {
-        const gameType = parseInt(req.params.gameType);
-        const limit = parseInt(req.query.limit) || 10;
-
-        if (!GAME_RULES[gameType]) {
-            return res.status(400).json({ error: 'Invalid game type' });
-        }
-
-        let scores = [];
-
-        // Get from MongoDB if available
-        if (db) {
-            scores = await db.collection('mgid_scores')
-                .find({ gameType })
-                .sort({ score: -1, timestamp: -1 })
-                .limit(limit)
-                .toArray();
-        }
-
-        // Format response
-        const leaderboard = scores.map((score, index) => ({
-            rank: index + 1,
-            playerName: score.mgidUsername || score.playerName,
-            score: score.score,
-            timestamp: score.timestamp,
-            gameDuration: score.gameDuration,
-            playerAddress: score.playerAddress
-        }));
-
-        res.json({
-            gameType,
-            gameName: GAME_RULES[gameType].name,
-            leaderboard,
-            total: scores.length
-        });
-
-    } catch (error) {
-        console.error('❌ Leaderboard fetch error:', error);
-        res.status(500).json({ error: 'Failed to fetch leaderboard' });
-    }
-});
-
-// Get global leaderboard (all games)
+// Get global leaderboard (all games) - MUST BE BEFORE :gameType route
 app.get('/api/leaderboard/global', async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 50;
@@ -387,6 +343,50 @@ app.get('/api/leaderboard/global', async (req, res) => {
     } catch (error) {
         console.error('❌ Global leaderboard fetch error:', error);
         res.status(500).json({ error: 'Failed to fetch global leaderboard' });
+    }
+});
+
+// Get leaderboard for specific game
+app.get('/api/leaderboard/:gameType', async (req, res) => {
+    try {
+        const gameType = parseInt(req.params.gameType);
+        const limit = parseInt(req.query.limit) || 10;
+
+        if (!GAME_RULES[gameType]) {
+            return res.status(400).json({ error: 'Invalid game type' });
+        }
+
+        let scores = [];
+
+        // Get from MongoDB if available
+        if (db) {
+            scores = await db.collection('mgid_scores')
+                .find({ gameType })
+                .sort({ score: -1, timestamp: -1 })
+                .limit(limit)
+                .toArray();
+        }
+
+        // Format response
+        const leaderboard = scores.map((score, index) => ({
+            rank: index + 1,
+            playerName: score.mgidUsername || score.playerName,
+            score: score.score,
+            timestamp: score.timestamp,
+            gameDuration: score.gameDuration,
+            playerAddress: score.playerAddress
+        }));
+
+        res.json({
+            gameType,
+            gameName: GAME_RULES[gameType].name,
+            leaderboard,
+            total: scores.length
+        });
+
+    } catch (error) {
+        console.error('❌ Leaderboard fetch error:', error);
+        res.status(500).json({ error: 'Failed to fetch leaderboard' });
     }
 });
 

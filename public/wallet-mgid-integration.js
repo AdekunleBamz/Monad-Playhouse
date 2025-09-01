@@ -84,10 +84,13 @@ class WalletMGIDIntegration {
             this.updateUI();
             this.showSuccess('Wallet connected successfully!');
             
-            // Show username registration prompt if needed
-            if (!this.hasUsername) {
-                this.showUsernameRegistrationPrompt();
-            }
+                    // Show username registration prompt if needed
+        if (!this.hasUsername) {
+            this.showUsernameRegistrationPrompt();
+        }
+
+        // Set up periodic username check (every 30 seconds)
+        this.startUsernameCheckInterval();
             
         } catch (error) {
             console.error('❌ Failed to handle wallet connection:', error);
@@ -99,6 +102,12 @@ class WalletMGIDIntegration {
         this.isAuthenticated = false;
         this.mgidUsername = null;
         this.hasUsername = false;
+        
+        // Clear username check interval
+        if (this.usernameCheckInterval) {
+            clearInterval(this.usernameCheckInterval);
+            this.usernameCheckInterval = null;
+        }
         
         this.updateUI();
         console.log('🚪 Wallet disconnected');
@@ -141,6 +150,31 @@ class WalletMGIDIntegration {
             this.mgidUsername = null;
             this.hasUsername = false;
         }
+    }
+
+    startUsernameCheckInterval() {
+        // Clear any existing interval
+        if (this.usernameCheckInterval) {
+            clearInterval(this.usernameCheckInterval);
+        }
+
+        // Check for username every 30 seconds
+        this.usernameCheckInterval = setInterval(async () => {
+            if (this.isAuthenticated && this.walletAddress && !this.hasUsername) {
+                console.log('🔄 Checking for MGID username update...');
+                const oldUsername = this.mgidUsername;
+                await this.fetchMGIDUsername();
+                
+                // If username was found, update UI and clear interval
+                if (this.hasUsername && this.mgidUsername !== oldUsername) {
+                    console.log('✅ MGID username detected:', this.mgidUsername);
+                    this.updateUI();
+                    this.showSuccess(`Welcome ${this.mgidUsername}! Your MGID username is now active.`);
+                    clearInterval(this.usernameCheckInterval);
+                    this.usernameCheckInterval = null;
+                }
+            }
+        }, 30000); // Check every 30 seconds
     }
 
     updateUI() {
@@ -203,6 +237,9 @@ class WalletMGIDIntegration {
                 <div class="mgid-prompt-buttons">
                     <button onclick="window.open('https://monad-games-id-site.vercel.app/', '_blank')" class="mgid-register-btn">
                         🎯 Register Username
+                    </button>
+                    <button onclick="window.walletMGID.checkUsernameNow(); this.parentElement.parentElement.parentElement.remove()" class="mgid-refresh-btn">
+                        🔄 Check Again
                     </button>
                     <button onclick="this.parentElement.parentElement.parentElement.remove()" class="mgid-close-btn">
                         Maybe Later
@@ -362,6 +399,34 @@ class WalletMGIDIntegration {
     hasUsernameRegistered() {
         return this.hasUsername;
     }
+
+    // Manual username check method
+    async checkUsernameNow() {
+        if (!this.isAuthenticated || !this.walletAddress) {
+            this.showError('Please connect your wallet first');
+            return;
+        }
+
+        console.log('🔄 Manual MGID username check...');
+        const oldUsername = this.mgidUsername;
+        await this.fetchMGIDUsername();
+        
+        if (this.hasUsername && this.mgidUsername !== oldUsername) {
+            console.log('✅ MGID username found:', this.mgidUsername);
+            this.updateUI();
+            this.showSuccess(`Welcome ${this.mgidUsername}! Your MGID username is now active.`);
+            
+            // Clear the check interval since we found the username
+            if (this.usernameCheckInterval) {
+                clearInterval(this.usernameCheckInterval);
+                this.usernameCheckInterval = null;
+            }
+        } else if (!this.hasUsername) {
+            this.showError('Username not found yet. Please make sure you completed registration on the MGID site.');
+        } else {
+            this.showSuccess('Username already detected!');
+        }
+    }
 }
 
 // Initialize when DOM is ready
@@ -401,6 +466,17 @@ style.textContent = `
         background: rgba(255,255,255,0.2);
         color: white;
         flex: 1;
+    }
+    
+    .mgid-refresh-btn {
+        background: rgba(100,200,255,0.2);
+        color: white;
+        flex: 1;
+    }
+    
+    .mgid-refresh-btn:hover {
+        background: rgba(100,200,255,0.3);
+        transform: translateY(-1px);
     }
     
     .mgid-register-btn:hover {

@@ -532,9 +532,16 @@ class MonadPlayhouse {
         try {
             console.log('startGameWithPayment called with:', { gameType, playerName });
             
-            // Set the player name for score submission
-            this.playerName = playerName;
-            console.log('Player name set to:', this.playerName);
+            // Get player name from wallet MGID integration if available
+            if (window.walletMGID && window.walletMGID.isUserAuthenticated()) {
+                const user = window.walletMGID.getUser();
+                this.playerName = user.username || `Player_${user.wallet.slice(-4)}`;
+                console.log('Player name set from wallet MGID:', this.playerName);
+            } else {
+                // Set the player name for score submission
+                this.playerName = playerName || 'Anonymous';
+                console.log('Player name set to:', this.playerName);
+            }
             
             // Check if required DOM elements exist
             const gameMenu = document.getElementById('gameMenu');
@@ -1932,13 +1939,21 @@ class MonadPlayhouse {
             hasScore: this.scores[gameType] > 0
         });
         
+        // Get player name from wallet MGID integration
+        if (window.walletMGID && window.walletMGID.isUserAuthenticated()) {
+            const user = window.walletMGID.getUser();
+            this.playerName = user.username || `Player_${user.wallet.slice(-4)}`;
+            console.log('Player name set from wallet MGID:', this.playerName);
+        }
+
         if (this.paymentRequired && this.playerName) {
             console.log('Score submission conditions met, submitting score...');
             await this.submitScoreToLeaderboard(gameType);
         } else {
             console.log('Score submission conditions NOT met:', {
                 paymentRequired: this.paymentRequired,
-                playerName: this.playerName
+                playerName: this.playerName,
+                walletConnected: window.walletMGID && window.walletMGID.isUserAuthenticated()
             });
         }
 
