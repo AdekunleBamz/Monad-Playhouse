@@ -126,24 +126,46 @@ class WalletMGIDIntegration {
 
             console.log('🔍 Fetching MGID username for:', this.walletAddress);
             
-            const response = await fetch(`https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress}`);
+            // Try multiple API endpoints and formats
+            const endpoints = [
+                `https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress}`,
+                `https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress.toLowerCase()}`,
+                `https://monad-games-id-site.vercel.app/api/users/${this.walletAddress}`,
+                `https://monad-games-id-site.vercel.app/api/users/${this.walletAddress.toLowerCase()}`
+            ];
             
-            if (!response.ok) {
-                console.warn('Failed to check MGID username - API not available');
-                return;
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`🔍 Trying endpoint: ${endpoint}`);
+                    const response = await fetch(endpoint);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`📝 API Response:`, data);
+                        
+                        if (data.hasUsername && data.user) {
+                            this.mgidUsername = data.user.username;
+                            this.hasUsername = true;
+                            console.log('✅ MGID username found:', this.mgidUsername);
+                            return;
+                        } else if (data.username) {
+                            // Alternative response format
+                            this.mgidUsername = data.username;
+                            this.hasUsername = true;
+                            console.log('✅ MGID username found (alt format):', this.mgidUsername);
+                            return;
+                        }
+                    }
+                } catch (err) {
+                    console.log(`❌ Endpoint failed: ${endpoint}`, err.message);
+                    continue;
+                }
             }
             
-            const data = await response.json();
-
-            if (data.hasUsername && data.user) {
-                this.mgidUsername = data.user.username;
-                this.hasUsername = true;
-                console.log('✅ MGID username found:', this.mgidUsername);
-            } else {
-                console.log('⚠️ No MGID username found - user needs to register');
-                this.mgidUsername = null;
-                this.hasUsername = false;
-            }
+            console.log('⚠️ No MGID username found across all endpoints - user needs to register or wait for sync');
+            this.mgidUsername = null;
+            this.hasUsername = false;
+            
         } catch (error) {
             console.error('❌ Failed to fetch MGID username:', error);
             // Don't fail the whole process if MGID API is down
