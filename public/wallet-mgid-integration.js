@@ -126,52 +126,131 @@ class WalletMGIDIntegration {
 
             console.log('🔍 Fetching MGID username for:', this.walletAddress);
             
-            // Try multiple API endpoints and formats
-            const endpoints = [
-                `https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress}`,
-                `https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress.toLowerCase()}`,
-                `https://monad-games-id-site.vercel.app/api/users/${this.walletAddress}`,
-                `https://monad-games-id-site.vercel.app/api/users/${this.walletAddress.toLowerCase()}`
-            ];
-            
-            for (const endpoint of endpoints) {
-                try {
-                    console.log(`🔍 Trying endpoint: ${endpoint}`);
-                    const response = await fetch(endpoint);
+            // First, try to connect directly to MGID site and see if user is already signed in
+            try {
+                // Check if user has MGID session by trying to access the API
+                const response = await fetch(`https://monad-games-id-site.vercel.app/api/check-wallet?wallet=${this.walletAddress}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`📝 MGID API Response:`, data);
                     
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log(`📝 API Response:`, data);
-                        
-                        if (data.hasUsername && data.user) {
-                            this.mgidUsername = data.user.username;
-                            this.hasUsername = true;
-                            console.log('✅ MGID username found:', this.mgidUsername);
-                            return;
-                        } else if (data.username) {
-                            // Alternative response format
-                            this.mgidUsername = data.username;
-                            this.hasUsername = true;
-                            console.log('✅ MGID username found (alt format):', this.mgidUsername);
-                            return;
-                        }
+                    if (data.hasUsername && data.user) {
+                        this.mgidUsername = data.user.username;
+                        this.hasUsername = true;
+                        console.log('✅ MGID username found:', this.mgidUsername);
+                        return;
                     }
-                } catch (err) {
-                    console.log(`❌ Endpoint failed: ${endpoint}`, err.message);
-                    continue;
                 }
+                
+                // If no direct username found, redirect user to MGID for proper authentication
+                console.log('⚠️ No MGID username found - redirecting to MGID for authentication');
+                this.mgidUsername = null;
+                this.hasUsername = false;
+                this.showMGIDAuthenticationPrompt();
+                
+            } catch (err) {
+                console.log(`❌ MGID API call failed:`, err.message);
+                this.mgidUsername = null;
+                this.hasUsername = false;
+                this.showMGIDAuthenticationPrompt();
             }
-            
-            console.log('⚠️ No MGID username found across all endpoints - user needs to register or wait for sync');
-            this.mgidUsername = null;
-            this.hasUsername = false;
             
         } catch (error) {
             console.error('❌ Failed to fetch MGID username:', error);
-            // Don't fail the whole process if MGID API is down
             this.mgidUsername = null;
             this.hasUsername = false;
         }
+    }
+
+    showMGIDAuthenticationPrompt() {
+        const overlay = document.createElement('div');
+        overlay.className = 'mgid-auth-overlay';
+        overlay.innerHTML = `
+            <div class="mgid-auth-popup">
+                <h3>🎮 Complete MGID Authentication</h3>
+                <p>To use the global leaderboard, you need to authenticate with Monad Games ID.</p>
+                <p><strong>Your wallet:</strong> ${this.walletAddress?.slice(0,6)}...${this.walletAddress?.slice(-4)}</p>
+                
+                <div class="mgid-instructions">
+                    <h4>📋 Authentication Steps:</h4>
+                    <ol>
+                        <li>Click "Go to MGID" below</li>
+                        <li>Sign in with the same wallet (${this.walletAddress?.slice(0,6)}...${this.walletAddress?.slice(-4)})</li>
+                        <li>Complete authentication/registration if needed</li>
+                        <li>Return here and refresh the page</li>
+                    </ol>
+                </div>
+                
+                <div class="mgid-auth-actions">
+                    <button id="mgidGoToSite" class="btn btn-primary">
+                        🚀 Go to MGID
+                    </button>
+                    <button id="mgidRefreshCheck" class="btn mgid-refresh-btn">
+                        🔄 I'm Authenticated - Check Again
+                    </button>
+                    <button id="mgidSkipAuth" class="btn btn-secondary">
+                        ⏭️ Skip for Now
+                    </button>
+                </div>
+                <p class="mgid-note">
+                    <small>💡 MGID uses embedded wallets. After authentication, your username should be detected automatically.</small>
+                </p>
+            </div>
+        `;
+
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Add event listeners
+        document.getElementById('mgidGoToSite').addEventListener('click', () => {
+            window.open('https://monad-games-id-site.vercel.app/', '_blank');
+        });
+
+        document.getElementById('mgidRefreshCheck').addEventListener('click', async () => {
+            const refreshBtn = document.getElementById('mgidRefreshCheck');
+            refreshBtn.textContent = '🔄 Checking...';
+            refreshBtn.disabled = true;
+            
+            await this.fetchMGIDUsername();
+            this.updateUI();
+            
+            if (this.hasUsername) {
+                document.body.removeChild(overlay);
+                this.showSuccessMessage(`✅ Welcome ${this.mgidUsername}! MGID authentication confirmed.`);
+            } else {
+                refreshBtn.textContent = '🔄 I\'m Authenticated - Check Again';
+                refreshBtn.disabled = false;
+                // Show helpful message
+                const noteEl = overlay.querySelector('.mgid-note small');
+                noteEl.innerHTML = '⚠️ Username still not found. Make sure you completed authentication with the same wallet address, then try again.';
+                noteEl.style.color = '#ffa500';
+            }
+        });
+
+        document.getElementById('mgidSkipAuth').addEventListener('click', () => {
+            document.body.removeChild(overlay);
+        });
+
+        // Close on background click
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                document.body.removeChild(overlay);
+            }
+        });
     }
 
     startUsernameCheckInterval() {
