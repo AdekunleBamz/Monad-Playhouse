@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "name": "monad-playhouse",
+  "builds": [
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
+    },
+    {
+      "src": "/",
+      "dest": "/public/index.html"
+    }
+  ],
+  "outputDirectory": "public",
+  "public": true,
+  "github": {
+    "enabled": true,
+    "silent": true
+  }
+}
