@@ -627,3 +627,128 @@ header h1 {
         max-width: 200px;
     }
 }
+
+/* MGID Username Prompt Styles */
+.mgid-username-popup {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 2px solid #00ff88;
+    border-radius: 15px;
+    padding: 30px;
+    max-width: 500px;
+    width: 90%;
+    color: #fff;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 255, 136, 0.3);
+}
+
+.mgid-username-popup h3 {
+    color: #00ff88;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.username-input-section {
+    margin: 20px 0;
+}
+
+.mgid-username-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid #00ff88;
+    border-radius: 8px;
+    background: rgba(0, 255, 136, 0.1);
+    color: #fff;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.mgid-username-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.mgid-username-input:focus {
+    outline: none;
+    box-shadow: 0 0 20px rgba(0, 255, 136, 0.5);
+}
+
+.mgid-auth-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+.mgid-auth-actions .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mgid-auth-actions .btn-primary {
+    background: #00ff88;
+    color: #000;
+}
+
+.mgid-auth-actions .btn-primary:hover {
+    background: #00cc6a;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.4);
+}
+
+.mgid-auth-actions .mgid-register-btn {
+    background: linear-gradient(45deg, #ff6b35, #f7931e);
+    color: #fff;
+}
+
+.mgid-auth-actions .mgid-register-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 107, 53, 0.4);
+}
+
+.mgid-auth-actions .btn-secondary {
+    background: transparent;
+    color: #fff;
+    border: 2px solid #666;
+}
+
+.mgid-auth-actions .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #999;
+}
+
+.mgid-instructions {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 255, 136, 0.1);
+    border-radius: 8px;
+    border-left: 4px solid #00ff88;
+    text-align: left;
+}
+
+.mgid-instructions ol {
+    margin: 10px 0 0 20px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.mgid-instructions li {
+    margin: 5px 0;
+}
+
+@media (max-width: 768px) {
+    .mgid-username-popup {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .mgid-auth-actions {
+        flex-direction: column;
+    }
+    
+    .mgid-auth-actions .btn {
+        width: 100%;
+    }
+}

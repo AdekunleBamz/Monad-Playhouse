@@ -532,11 +532,11 @@ class MonadPlayhouse {
         try {
             console.log('startGameWithPayment called with:', { gameType, playerName });
             
-            // Get player name from wallet MGID integration if available
-            if (window.walletMGID && window.walletMGID.isUserAuthenticated()) {
-                const user = window.walletMGID.getUser();
-                this.playerName = user.username || `Player_${user.wallet.slice(-4)}`;
-                console.log('Player name set from wallet MGID:', this.playerName);
+            // Get player name from MGID integration if available
+            if (window.mgidIntegration && window.mgidIntegration.isUserAuthenticated()) {
+                const user = window.mgidIntegration.getUserInfo();
+                this.playerName = user.username;
+                console.log('Player name set from MGID:', this.playerName);
             } else {
                 // Set the player name for score submission
                 this.playerName = playerName || 'Anonymous';
@@ -1939,11 +1939,11 @@ class MonadPlayhouse {
             hasScore: this.scores[gameType] > 0
         });
         
-        // Get player name from wallet MGID integration
-        if (window.walletMGID && window.walletMGID.isUserAuthenticated()) {
-            const user = window.walletMGID.getUser();
-            this.playerName = user.username || `Player_${user.wallet.slice(-4)}`;
-            console.log('Player name set from wallet MGID:', this.playerName);
+        // Get player name from MGID integration
+        if (window.mgidIntegration && window.mgidIntegration.isUserAuthenticated()) {
+            const user = window.mgidIntegration.getUserInfo();
+            this.playerName = user.username;
+            console.log('Player name set from MGID:', this.playerName);
         }
 
         if (this.paymentRequired && this.playerName) {
@@ -1953,7 +1953,7 @@ class MonadPlayhouse {
             console.log('Score submission conditions NOT met:', {
                 paymentRequired: this.paymentRequired,
                 playerName: this.playerName,
-                walletConnected: window.walletMGID && window.walletMGID.isUserAuthenticated()
+                mgidConnected: window.mgidIntegration && window.mgidIntegration.isUserAuthenticated()
             });
         }
 
@@ -1988,10 +1988,10 @@ class MonadPlayhouse {
             
             this.scoreSubmissionInProgress = true;
             
-            // Check if wallet is connected for MGID integration
-            if (!window.walletMGID || !window.walletMGID.isUserAuthenticated()) {
-                console.log('User not authenticated with wallet, skipping score submission');
-                this.showWalletLoginPrompt();
+            // Check if MGID is connected
+            if (!window.mgidIntegration || !window.mgidIntegration.isUserAuthenticated()) {
+                console.log('User not authenticated with MGID, skipping score submission');
+                this.showMGIDLoginPrompt();
                 return;
             }
             
@@ -2012,7 +2012,7 @@ class MonadPlayhouse {
                     duration: gameDuration
                 });
                 
-                const result = await window.walletMGID.submitScore(
+                const result = await window.mgidIntegration.submitScore(
                     blockchainGameType, 
                     this.scores[gameType], 
                     this.playerName,
@@ -2031,15 +2031,15 @@ class MonadPlayhouse {
         }
     }
 
-    showWalletLoginPrompt() {
+    showMGIDLoginPrompt() {
         const notification = document.createElement('div');
         notification.className = 'mgid-login-prompt';
         notification.innerHTML = `
             <div class="mgid-prompt-content">
                 <h4>🎯 Join the Global Leaderboard!</h4>
-                <p>Connect your wallet to submit your score and compete with players from all games via MGID integration.</p>
-                <button onclick="window.walletMGID && window.walletMGID.connectWallet(); this.parentElement.parentElement.remove();" class="mgid-prompt-login">
-                    Connect Wallet
+                <p>Sign in with Monad Games ID to submit your score and compete with players from all games!</p>
+                <button onclick="window.mgidIntegration && window.mgidIntegration.showUsernamePrompt(); this.parentElement.parentElement.remove();" class="mgid-prompt-login">
+                    🎮 Sign in with MGID
                 </button>
                 <button onclick="this.parentElement.parentElement.remove()" class="mgid-prompt-close">
                     Maybe Later
