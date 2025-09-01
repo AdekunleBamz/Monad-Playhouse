@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Monad Playhouse - Choose Your Adventure</title>
-    <link rel="stylesheet" href="style.css?v=40">
+    <link rel="stylesheet" href="style.css?v=45">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🎮 Monad Playhouse</h1>
-            <p class="subtitle">Choose Your Adventure</p>
+            <h1>Bakhryaan Blessed Playhouse</h1>
+            <p class="subtitle">Blessed Gaming Experience</p>
             
             <!-- Login Section -->
             <div class="login-section">
@@ -29,28 +29,73 @@
 
         <main>
             <div id="gameMenu">
+            <div class="hero-section">
+                <h2 class="adventure-title">Choose Your Adventure</h2>
+            </div>
             <div class="game-grid">
                 <div class="game-card" data-game="snake">
-                    <h3>🐍 Snake</h3>
-                    <p>Classic snake game with a twist</p>
+                    <div class="game-icon">🐍</div>
+                    <h3>Neon Snake</h3>
+                    <p>Classic snake with neon aesthetics</p>
+                    <div class="score-display">
+                        <span class="score-label">High Score:</span>
+                        <span class="score-value" id="snakeScore">2660</span>
+                    </div>
                     <button class="play-btn">Play</button>
                 </div>
                 
                 <div class="game-card" data-game="memory">
-                    <h3>🧠 Memory</h3>
-                    <p>Test your memory skills</p>
+                    <div class="game-icon">🧠</div>
+                    <h3>Memory Match</h3>
+                    <p>Test your memory with beautiful cards</p>
+                    <div class="score-display">
+                        <span class="score-label">Best Time:</span>
+                        <span class="score-value" id="memoryTime">42s</span>
+                    </div>
                     <button class="play-btn">Play</button>
                 </div>
                 
                 <div class="game-card" data-game="math">
-                    <h3>🔢 Math</h3>
-                    <p>Quick math challenges</p>
+                    <div class="game-icon">🔢</div>
+                    <h3>Quick Math</h3>
+                    <p>Fast-paced mathematical challenges</p>
+                    <div class="score-display">
+                        <span class="score-label">Level:</span>
+                        <span class="score-value" id="mathLevel">19</span>
+                    </div>
                     <button class="play-btn">Play</button>
                 </div>
                 
                 <div class="game-card" data-game="color">
-                    <h3>🎨 Color</h3>
-                    <p>Color matching game</p>
+                    <div class="game-icon">🎨</div>
+                    <h3>Color Rush</h3>
+                    <p>Match colors in this exciting rush</p>
+                    <div class="score-display">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value" id="colorScore">10</span>
+                    </div>
+                    <button class="play-btn">Play</button>
+                </div>
+                
+                <div class="game-card" data-game="tetris">
+                    <div class="game-icon">🧩</div>
+                    <h3>Neon Tetris</h3>
+                    <p>Classic block stacking with neon glow</p>
+                    <div class="score-display">
+                        <span class="score-label">Lines:</span>
+                        <span class="score-value" id="tetrisLines">0</span>
+                    </div>
+                    <button class="play-btn">Play</button>
+                </div>
+                
+                <div class="game-card" data-game="flappy">
+                    <div class="game-icon">🐦</div>
+                    <h3>Flappy Bird</h3>
+                    <p>Navigate through neon pipes</p>
+                    <div class="score-display">
+                        <span class="score-label">Score:</span>
+                        <span class="score-value" id="flappyScore">2</span>
+                    </div>
                     <button class="play-btn">Play</button>
                 </div>
             </div>
