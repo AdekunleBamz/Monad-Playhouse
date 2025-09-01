@@ -198,23 +198,74 @@ header h1 {
     text-align: center;
     transition: all 0.3s ease;
     box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.game-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 15px;
+    padding: 2px;
+    background: linear-gradient(45deg, #00ff88, #00ff88);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .game-card:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 40px rgba(0, 255, 136, 0.4);
-    border-color: #00d4ff;
+    border-color: #00ff88;
+}
+
+.game-card:hover::before {
+    opacity: 1;
+}
+
+.game-card:hover {
+    box-shadow: 
+        0 12px 40px rgba(0, 255, 136, 0.4),
+        0 0 20px rgba(0, 255, 136, 0.6),
+        0 0 40px rgba(0, 255, 136, 0.4),
+        0 0 60px rgba(0, 255, 136, 0.2);
 }
 
 .game-card h3 {
     font-size: 1.5rem;
     margin-bottom: 1rem;
     color: #00ff88;
+    text-shadow: 0 0 10px rgba(0, 255, 136, 0.8);
+    transition: text-shadow 0.3s ease;
+}
+
+.game-card:hover h3 {
+    text-shadow: 
+        0 0 10px rgba(0, 255, 136, 1),
+        0 0 20px rgba(0, 255, 136, 0.8),
+        0 0 30px rgba(0, 255, 136, 0.6);
 }
 
 .game-card p {
     margin-bottom: 1rem;
     color: #cccccc;
+    transition: color 0.3s ease;
+}
+
+.game-card:hover p {
+    color: #ffffff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 .game-instructions {
@@ -237,6 +288,30 @@ header h1 {
     font-size: 14px;
     margin: 5px;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.play-btn::before, .play-premium-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 25px;
+    padding: 2px;
+    background: linear-gradient(45deg, #00ff88, #00ff88);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 /* Generic buttons (used in overlays) */
@@ -277,6 +352,13 @@ header h1 {
 .play-btn:hover, .play-premium-btn:hover {
     background: linear-gradient(45deg, #0056b3, #004085);
     transform: translateY(-2px);
+    box-shadow: 
+        0 5px 15px rgba(0, 123, 255, 0.4),
+        0 0 20px rgba(0, 255, 136, 0.3);
+}
+
+.play-btn:hover::before, .play-premium-btn:hover::before {
+    opacity: 1;
 }
 
 .play-premium-btn {
@@ -285,6 +367,9 @@ header h1 {
 
 .play-premium-btn:hover {
     background: linear-gradient(45deg, #1e7e34, #155724);
+    box-shadow: 
+        0 5px 15px rgba(40, 167, 69, 0.4),
+        0 0 20px rgba(0, 255, 136, 0.3);
 }
 
 /* Footer */
