@@ -38,7 +38,11 @@ Click **"Environment"** tab and add these variables:
 |-----|-------|
 | `MONGODB_URI` | `mongodb+srv://adebamzzw1_db_user:GSZXxpbNIdVjZSQc@cluster0.fbquz94.mongodb.net/monad-playhouse?retryWrites=true&w=majority&appName=Cluster0` |
 | `NODE_ENV` | `production` |
-| `CORS_ORIGIN` | `https://monad-playhouse-6lj3npt3p-bamzzs-projects.vercel.app` |
+| `CORS_ORIGIN` | `https://monad-playhouse-n0oh7fg0n-bamzzs-projects.vercel.app` |
+| `MGID_PRIVATE_KEY` | `0x5df267fd6e370e395826236785055179745ed351a6398a2b5ff4c5855b5b27e2` |
+| `MGID_CONTRACT_ADDRESS` | `0xceCBFF203C8B6044F52CE23D914A1bfD997541A4` |
+| `MONAD_RPC_URL` | `https://rpc.testnet.monad.xyz` |
+| `PORT` | `3001` |
 
 ### Step 4: Deploy
 1. Click **"Create Web Service"**
