@@ -179,7 +179,8 @@ app.get('/api/health', (req, res) => {
         mgidEnabled: !!mgidContract,
         mongoConnected: !!db,
         server: 'mgid-leaderboard-server',
-        version: '3.0.1'
+        version: '3.0.2',
+        deployment: 'render-forced-update'
     });
 });
 
