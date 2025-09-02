@@ -86,8 +86,8 @@ class PaymentGateway {
                         <div class="player-name-input">
                             <label for="playerName">MGID Username:</label>
                             <input type="text" id="playerName" placeholder="Your MGID username will appear here" maxlength="20" readonly>
-                            <small>💡 Connect your wallet and check MGID registration status</small>
-                            <button id="connectMGIDBtn" class="mgid-connect-btn" style="margin-top: 10px;">🎮 Connect Wallet for MGID</button>
+                            <small>💡 Enter your MGID username - no wallet connection needed</small>
+                            <button id="connectMGIDBtn" class="mgid-connect-btn" style="margin-top: 10px;">🎮 Enter MGID Username</button>
                         </div>
                     </div>
                     
@@ -401,9 +401,9 @@ class PaymentGateway {
             const connectMGIDBtn = document.getElementById('connectMGIDBtn');
             if (connectMGIDBtn) {
                 connectMGIDBtn.addEventListener('click', () => {
-                    console.log('Connecting to MGID via wallet...');
+                    console.log('Connecting to MGID...');
                     if (window.mgidIntegration) {
-                        window.mgidIntegration.connectWalletAndMGID();
+                        window.mgidIntegration.showMGIDPrompt();
                         // Update UI after MGID connection
                         setTimeout(() => this.updateWalletStatus(), 2000);
                     } else {
@@ -564,7 +564,7 @@ class PaymentGateway {
             // Reset MGID button state
             const connectMGIDBtn = document.getElementById('connectMGIDBtn');
             if (connectMGIDBtn) {
-                connectMGIDBtn.textContent = '🎮 Connect Wallet for MGID';
+                connectMGIDBtn.textContent = '🎮 Enter MGID Username';
                 connectMGIDBtn.disabled = false;
             }
         }
