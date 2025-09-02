@@ -1,7 +1,7 @@
-// Monad Games ID Integration using Privy SDK
-// Cross App ID: cmd8euall0037le0my79qpz42
+// Direct MGID Integration using wallet connection
+// Following MGID documentation pattern but with direct wallet access
 
-class MGIDPrivyIntegration {
+class MGIDWalletIntegration {
     constructor() {
         this.isConnected = false;
         this.userInfo = null;
@@ -9,62 +9,8 @@ class MGIDPrivyIntegration {
         this.mgidWallet = null;
         this.crossAppId = 'cmd8euall0037le0my79qpz42'; // Monad Games ID Cross App ID
         
-        this.initPrivy();
         this.setupEventListeners();
-        console.log('🎮 MGID Privy Integration initialized');
-    }
-
-    async initPrivy() {
-        try {
-            // Check if Privy is loaded
-            if (typeof window.Privy === 'undefined') {
-                console.log('📦 Loading Privy SDK...');
-                await this.loadPrivySDK();
-            }
-
-            // Initialize Privy with MGID configuration
-            this.privy = window.Privy.initialize({
-                appId: 'clzmk22w5001t12l5kxvp0hsl', // Your Privy App ID
-                config: {
-                    loginMethods: ['cross_app'],
-                    appearance: {
-                        theme: 'dark',
-                        accentColor: '#00ff88',
-                        logo: 'https://monad-games-id-site.vercel.app/logo.png'
-                    },
-                    embeddedWallets: {
-                        createOnLogin: 'users-without-wallets'
-                    }
-                }
-            });
-
-            console.log('✅ Privy SDK initialized for MGID');
-
-        } catch (error) {
-            console.error('❌ Failed to initialize Privy SDK:', error);
-        }
-    }
-
-    async loadPrivySDK() {
-        return new Promise((resolve, reject) => {
-            if (window.Privy) {
-                resolve();
-                return;
-            }
-
-            const script = document.createElement('script');
-            script.src = 'https://auth.privy.io/js/privy-react-auth.umd.js';
-            script.onload = () => {
-                console.log('✅ Privy SDK loaded');
-                // Give it a moment to initialize
-                setTimeout(resolve, 500);
-            };
-            script.onerror = () => {
-                console.error('❌ Failed to load Privy SDK');
-                reject(new Error('Failed to load Privy SDK'));
-            };
-            document.head.appendChild(script);
-        });
+        console.log('🎮 MGID Wallet Integration initialized');
     }
 
     setupEventListeners() {
@@ -72,7 +18,7 @@ class MGIDPrivyIntegration {
             const connectBtn = document.getElementById('connectWallet');
             const logoutBtn = document.getElementById('logoutBtn');
             
-            console.log('🔗 Setting up MGID Privy event listeners');
+            console.log('🔗 Setting up MGID Wallet event listeners');
             console.log('connectBtn found:', !!connectBtn);
             console.log('logoutBtn found:', !!logoutBtn);
             
@@ -80,8 +26,8 @@ class MGIDPrivyIntegration {
                 console.log('✅ Adding click listener to connectWallet button');
                 connectBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    console.log('🎮 Connect button clicked - starting MGID login');
-                    this.loginWithMGID();
+                    console.log('🎮 Connect button clicked - starting MGID wallet login');
+                    this.connectWalletAndMGID();
                 });
             } else {
                 console.error('❌ connectWallet button not found!');
@@ -99,69 +45,60 @@ class MGIDPrivyIntegration {
         }
     }
 
-    async loginWithMGID() {
+    async connectWalletAndMGID() {
         try {
-            if (!this.privy) {
-                throw new Error('Privy SDK not initialized');
-            }
-
-            console.log('🔗 Starting MGID login with Privy...');
+            console.log('🔗 Starting wallet connection for MGID...');
             
-            // Login with Privy (this will show MGID login if configured)
-            await this.privy.login();
-            
-            // Check if user is authenticated
-            if (this.privy.authenticated) {
-                await this.handleAuthenticatedUser();
-            }
-
-        } catch (error) {
-            console.error('❌ MGID login failed:', error);
-            this.showError('Failed to login with MGID. Please try again.');
-        }
-    }
-
-    async handleAuthenticatedUser() {
-        try {
-            const user = this.privy.user;
-            console.log('👤 Authenticated user:', user);
-
-            // Find the MGID cross-app account
-            const crossAppAccount = user.linkedAccounts.find(
-                (account) =>
-                    account.type === 'cross_app' &&
-                    account.providerApp.id === this.crossAppId
-            );
-
-            if (crossAppAccount && crossAppAccount.embeddedWallets.length > 0) {
-                this.mgidWallet = crossAppAccount.embeddedWallets[0].address;
-                console.log('🎯 MGID wallet found:', this.mgidWallet);
-
-                // Fetch username from MGID API
-                await this.fetchMGIDUsername();
-                
-                if (this.mgidUsername) {
-                    this.isConnected = true;
-                    this.userInfo = {
-                        username: this.mgidUsername,
-                        wallet: this.mgidWallet
-                    };
-                    
-                    console.log('✅ MGID connection successful:', this.userInfo);
-                    this.updateUI();
-                    this.showSuccessMessage(`Welcome ${this.mgidUsername}! Connected via MGID.`);
+            // Connect wallet first (using existing wallet system)
+            if (window.monadWallet && typeof window.monadWallet.connect === 'function') {
+                console.log('💰 Connecting via MonadWallet...');
+                const connected = await window.monadWallet.connect();
+                if (connected) {
+                    this.mgidWallet = window.monadWallet.address;
+                    console.log('✅ Wallet connected:', this.mgidWallet);
                 } else {
-                    this.showError(`Wallet ${this.mgidWallet.slice(0,6)}...${this.mgidWallet.slice(-4)} needs to register a username on MGID!`);
-                    this.promptRegister();
+                    throw new Error('Failed to connect wallet');
                 }
             } else {
-                console.error('❌ MGID cross-app account not found');
-                this.showError('MGID wallet not found. Please ensure you have an MGID account linked.');
+                // Fallback to direct MetaMask connection
+                console.log('💰 Connecting via MetaMask...');
+                if (!window.ethereum) {
+                    throw new Error('MetaMask not found');
+                }
+                
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts'
+                });
+                
+                if (accounts.length > 0) {
+                    this.mgidWallet = accounts[0];
+                    console.log('✅ Wallet connected:', this.mgidWallet);
+                } else {
+                    throw new Error('No accounts found');
+                }
+            }
+
+            // Now check MGID username
+            await this.fetchMGIDUsername();
+            
+            if (this.mgidUsername) {
+                this.isConnected = true;
+                this.userInfo = {
+                    username: this.mgidUsername,
+                    wallet: this.mgidWallet
+                };
+                
+                console.log('✅ MGID connection successful:', this.userInfo);
+                this.updateUI();
+                this.showSuccessMessage(`Welcome ${this.mgidUsername}! Connected via MGID.`);
+            } else {
+                console.log('⚠️ No MGID username found for wallet:', this.mgidWallet);
+                this.promptRegister();
             }
 
         } catch (error) {
-            console.error('❌ Failed to handle authenticated user:', error);
-            this.showError('Failed to connect to MGID. Please try again.');
+            console.error('❌ MGID wallet connection failed:', error);
+            this.showError('Failed to connect wallet for MGID. Please try again.');
         }
     }
 
@@ -196,18 +133,102 @@ class MGIDPrivyIntegration {
     }
 
     promptRegister() {
-        const shouldRegister = confirm('No username found for your MGID wallet. Would you like to register one now?');
-        if (shouldRegister) {
-            window.open('https://monad-games-id-site.vercel.app/', '_blank');
+        // Create a custom popup instead of using confirm
+        this.showRegistrationPrompt();
+    }
+
+    showRegistrationPrompt() {
+        // Remove any existing popup
+        const existingPopup = document.querySelector('.mgid-registration-popup');
+        if (existingPopup) {
+            existingPopup.remove();
         }
+
+        const popup = document.createElement('div');
+        popup.className = 'mgid-registration-popup';
+        popup.innerHTML = `
+            <div class="mgid-popup-overlay">
+                <div class="mgid-popup-content">
+                    <h3>🎮 MGID Registration Required</h3>
+                    <p>Your wallet <strong>${this.mgidWallet.slice(0,6)}...${this.mgidWallet.slice(-4)}</strong> is not registered with Monad Games ID.</p>
+                    <p>Register a username to compete on the global leaderboard!</p>
+                    <div class="mgid-popup-buttons">
+                        <button class="mgid-register-btn" onclick="window.open('https://monad-games-id-site.vercel.app/', '_blank')">
+                            🔗 Register on MGID
+                        </button>
+                        <button class="mgid-cancel-btn" onclick="this.parentElement.parentElement.parentElement.parentElement.remove()">
+                            ❌ Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        popup.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10000;
+        `;
+
+        const overlay = popup.querySelector('.mgid-popup-overlay');
+        overlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        `;
+
+        const content = popup.querySelector('.mgid-popup-content');
+        content.style.cssText = `
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+            border: 2px solid #00ff88;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            color: #fff;
+        `;
+
+        const registerBtn = popup.querySelector('.mgid-register-btn');
+        registerBtn.style.cssText = `
+            background: #00ff88;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        `;
+
+        const cancelBtn = popup.querySelector('.mgid-cancel-btn');
+        cancelBtn.style.cssText = `
+            background: #ff4444;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            margin: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        `;
+
+        document.body.appendChild(popup);
     }
 
     logout() {
         try {
-            if (this.privy) {
-                this.privy.logout();
-            }
-            
             this.isConnected = false;
             this.userInfo = null;
             this.mgidUsername = null;
@@ -355,15 +376,14 @@ class MGIDPrivyIntegration {
     }
 }
 
-// Initialize MGID Privy Integration
-const initMGIDPrivy = () => {
-    console.log('🚀 Initializing MGID Privy Integration...');
-    window.mgidIntegration = new MGIDPrivyIntegration();
+// Initialize MGID Wallet Integration
+const initMGIDWallet = () => {
+    console.log('🚀 Initializing MGID Wallet Integration...');
+    window.mgidIntegration = new MGIDWalletIntegration();
 };
 
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMGIDPrivy);
+    document.addEventListener('DOMContentLoaded', initMGIDWallet);
 } else {
-    initMGIDPrivy();
+    initMGIDWallet();
 }
-

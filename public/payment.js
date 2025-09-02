@@ -86,8 +86,8 @@ class PaymentGateway {
                         <div class="player-name-input">
                             <label for="playerName">MGID Username:</label>
                             <input type="text" id="playerName" placeholder="Your MGID username will appear here" maxlength="20" readonly>
-                            <small>💡 Connect with MGID via Privy for automatic wallet detection</small>
-                            <button id="connectMGIDBtn" class="mgid-connect-btn" style="margin-top: 10px;">🎮 Login with MGID (Privy)</button>
+                            <small>💡 Connect your wallet and check MGID registration status</small>
+                            <button id="connectMGIDBtn" class="mgid-connect-btn" style="margin-top: 10px;">🎮 Connect Wallet for MGID</button>
                         </div>
                     </div>
                     
@@ -401,9 +401,9 @@ class PaymentGateway {
             const connectMGIDBtn = document.getElementById('connectMGIDBtn');
             if (connectMGIDBtn) {
                 connectMGIDBtn.addEventListener('click', () => {
-                    console.log('Connecting to MGID via Privy...');
+                    console.log('Connecting to MGID via wallet...');
                     if (window.mgidIntegration) {
-                        window.mgidIntegration.loginWithMGID();
+                        window.mgidIntegration.connectWalletAndMGID();
                         // Update UI after MGID connection
                         setTimeout(() => this.updateWalletStatus(), 2000);
                     } else {
@@ -536,7 +536,7 @@ class PaymentGateway {
                     // Update MGID button state
                     const connectMGIDBtn = document.getElementById('connectMGIDBtn');
                     if (connectMGIDBtn) {
-                        connectMGIDBtn.textContent = '✅ MGID Connected (Privy)';
+                        connectMGIDBtn.textContent = '✅ MGID Connected';
                         connectMGIDBtn.disabled = true;
                     }
                 }
@@ -564,7 +564,7 @@ class PaymentGateway {
             // Reset MGID button state
             const connectMGIDBtn = document.getElementById('connectMGIDBtn');
             if (connectMGIDBtn) {
-                connectMGIDBtn.textContent = '🎮 Login with MGID (Privy)';
+                connectMGIDBtn.textContent = '🎮 Connect Wallet for MGID';
                 connectMGIDBtn.disabled = false;
             }
         }
