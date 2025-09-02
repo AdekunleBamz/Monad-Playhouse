@@ -5,7 +5,7 @@ class MGIDLeaderboard {
     constructor() {
         this.apiBaseUrl = window.location.hostname === 'localhost' 
             ? 'http://localhost:3001' 
-            : 'https://monad-playhouse-backend.onrender.com';
+            : 'https://monad-playhouse-leaderboard.onrender.com';
         this.currentGameType = null;
         this.mgidGlobalUrl = 'https://monad-games-id-site.vercel.app/leaderboard';
     }
