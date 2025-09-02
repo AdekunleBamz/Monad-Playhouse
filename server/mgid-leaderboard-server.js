@@ -177,7 +177,9 @@ app.get('/api/health', (req, res) => {
         status: 'healthy',
         timestamp: new Date().toISOString(),
         mgidEnabled: !!mgidContract,
-        mongoConnected: !!db
+        mongoConnected: !!db,
+        server: 'mgid-leaderboard-server',
+        version: '3.0.1'
     });
 });
 
