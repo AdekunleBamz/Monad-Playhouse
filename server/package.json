@@ -1,12 +1,11 @@
 {
   "name": "monad-playhouse-server",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "description": "Monad Playhouse MGID-focused Leaderboard Server",
   "main": "mgid-leaderboard-server.js",
   "scripts": {
-    "start": "node mgid-leaderboard-server.js",
+    "start": "echo 'Starting MGID Leaderboard Server...' && node mgid-leaderboard-server.js",
     "dev": "node mgid-leaderboard-server.js",
-    "hybrid": "node leaderboard-server-hybrid.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
