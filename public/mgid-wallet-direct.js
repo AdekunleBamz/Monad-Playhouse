@@ -10,6 +10,7 @@ class MGIDWalletIntegration {
         this.crossAppId = 'cmd8euall0037le0my79qpz42'; // Monad Games ID Cross App ID
         
         this.setupEventListeners();
+        this.initializeMGIDStatus();
         console.log('🎮 MGID Wallet Integration initialized');
     }
 
@@ -49,32 +50,47 @@ class MGIDWalletIntegration {
         try {
             console.log('🔗 Starting wallet connection for MGID...');
             
-            // Connect wallet first (using existing wallet system)
-            if (window.monadWallet && typeof window.monadWallet.connect === 'function') {
-                console.log('💰 Connecting via MonadWallet...');
-                const connected = await window.monadWallet.connect();
-                if (connected) {
-                    this.mgidWallet = window.monadWallet.address;
-                    console.log('✅ Wallet connected:', this.mgidWallet);
-                } else {
-                    throw new Error('Failed to connect wallet');
-                }
+            // First check if wallet is already connected
+            await this.checkExistingWalletConnection();
+            
+            if (this.mgidWallet) {
+                console.log('✅ Wallet already connected:', this.mgidWallet);
             } else {
-                // Fallback to direct MetaMask connection
-                console.log('💰 Connecting via MetaMask...');
-                if (!window.ethereum) {
-                    throw new Error('MetaMask not found');
-                }
-                
-                const accounts = await window.ethereum.request({
-                    method: 'eth_requestAccounts'
-                });
-                
-                if (accounts.length > 0) {
-                    this.mgidWallet = accounts[0];
-                    console.log('✅ Wallet connected:', this.mgidWallet);
+                // Connect wallet first (using existing wallet system)
+                if (window.monadWallet && typeof window.monadWallet.connect === 'function') {
+                    console.log('💰 Connecting via MonadWallet...');
+                    const connected = await window.monadWallet.connect();
+                    if (connected) {
+                        this.mgidWallet = window.monadWallet.address;
+                        console.log('✅ Wallet connected:', this.mgidWallet);
+                    } else {
+                        throw new Error('Failed to connect wallet');
+                    }
                 } else {
-                    throw new Error('No accounts found');
+                    // Fallback to direct MetaMask connection
+                    console.log('💰 Connecting via MetaMask...');
+                    if (!window.ethereum) {
+                        throw new Error('MetaMask not found');
+                    }
+                    
+                    // Check if accounts are already available
+                    let accounts = await window.ethereum.request({
+                        method: 'eth_accounts'
+                    });
+                    
+                    if (accounts.length === 0) {
+                        // Only request accounts if none are connected
+                        accounts = await window.ethereum.request({
+                            method: 'eth_requestAccounts'
+                        });
+                    }
+                    
+                    if (accounts.length > 0) {
+                        this.mgidWallet = accounts[0];
+                        console.log('✅ Wallet connected:', this.mgidWallet);
+                    } else {
+                        throw new Error('No accounts found');
+                    }
                 }
             }
 
@@ -99,6 +115,54 @@ class MGIDWalletIntegration {
         } catch (error) {
             console.error('❌ MGID wallet connection failed:', error);
             this.showError('Failed to connect wallet for MGID. Please try again.');
+        }
+    }
+
+    async initializeMGIDStatus() {
+        try {
+            // Check if wallet is already connected and auto-load MGID info
+            await this.checkExistingWalletConnection();
+            if (this.mgidWallet) {
+                await this.fetchMGIDUsername();
+                if (this.mgidUsername) {
+                    this.isConnected = true;
+                    this.userInfo = {
+                        username: this.mgidUsername,
+                        wallet: this.mgidWallet
+                    };
+                    this.updateUI();
+                    console.log('✅ Auto-loaded MGID status:', this.userInfo);
+                }
+            }
+        } catch (error) {
+            console.log('ℹ️ Could not auto-load MGID status:', error);
+        }
+    }
+
+    async checkExistingWalletConnection() {
+        try {
+            // Check MonadWallet first
+            if (window.monadWallet && window.monadWallet.address) {
+                this.mgidWallet = window.monadWallet.address;
+                console.log('✅ Found existing MonadWallet connection:', this.mgidWallet);
+                return;
+            }
+
+            // Check MetaMask accounts
+            if (window.ethereum) {
+                const accounts = await window.ethereum.request({
+                    method: 'eth_accounts'
+                });
+                if (accounts.length > 0) {
+                    this.mgidWallet = accounts[0];
+                    console.log('✅ Found existing MetaMask connection:', this.mgidWallet);
+                    return;
+                }
+            }
+
+            console.log('ℹ️ No existing wallet connection found');
+        } catch (error) {
+            console.log('ℹ️ Error checking existing connection:', error);
         }
     }
 
