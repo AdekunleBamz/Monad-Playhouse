@@ -393,6 +393,24 @@ app.get('/api/leaderboard/:gameType', async (req, res) => {
     }
 });
 
+// Root URL handler for health check
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: '🚀 Monad Playhouse MGID Leaderboard Server is running!',
+    status: 'healthy',
+    mgidEnabled: !!mgidContract,
+    mongoConnected: !!db,
+    version: '3.1.0',
+    endpoints: {
+      health: '/api/health',
+      config: '/api/config',
+      submitScore: 'POST /api/submit-score',
+      globalLeaderboard: '/api/leaderboard/global',
+      gameLeaderboard: '/api/leaderboard/:gameType'
+    }
+  });
+});
+
 // Initialize server
 const startServer = async () => {
     try {
